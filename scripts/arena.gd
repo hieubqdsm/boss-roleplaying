@@ -58,6 +58,7 @@ func _process(delta: float) -> void:
 		return
 	fight_time += delta
 	hud.update_cooldowns(queen.cooldown_fractions())
+	hud.update_hero_stamina(hero.stamina_frac(), hero.flasks_left())
 
 
 func _on_phase2() -> void:

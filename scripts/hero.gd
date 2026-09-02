@@ -261,6 +261,15 @@ func is_dead() -> bool:
 	return dead
 
 
+## Cho HUD đọc: stamina 0..1 và số bình estus còn.
+func stamina_frac() -> float:
+	return float(brain_state.get("stamina", 100.0)) / float(BrainScript.STAMINA_MAX)
+
+
+func flasks_left() -> int:
+	return int(brain_state.get("flasks", BrainScript.FLASKS_MAX))
+
+
 ## Debug: ĐỎ = hitbox thân (đạn/phép của Queen trúng đây) / XANH LÁ = bất tử
 ## (i-frame lăn, mới hồi sinh). VÀNG = tầm chém của hero.
 func _debug_shapes() -> Array:

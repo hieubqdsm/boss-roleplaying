@@ -7,6 +7,8 @@ const Style := preload("res://scripts/ui/ui_style.gd")
 
 var queen_bar: ProgressBar
 var hero_bar: ProgressBar
+var hero_stamina_bar: ProgressBar
+var flask_pips: Array[ColorRect] = []
 var fallen_label: Label
 var banner: Label
 var cd_slash: ColorRect
@@ -55,6 +57,21 @@ func _ready() -> void:
 	hero_bar = Style.health_bar(380, Color("3d6ea5"))
 	hero_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
 	hside.add_child(hero_bar)
+	# Stamina + estus của hero (đọc vị AI — thấy nó cạn sức/húp bình là biết nhịp đánh)
+	hero_stamina_bar = Style.health_bar(380, Color("3e8f6e"))
+	hero_stamina_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
+	hero_stamina_bar.custom_minimum_size = Vector2(380, 8)
+	hside.add_child(hero_stamina_bar)
+	var flask_row := HBoxContainer.new()
+	flask_row.alignment = BoxContainer.ALIGNMENT_END
+	flask_row.add_theme_constant_override("separation", 4)
+	hside.add_child(flask_row)
+	for i in 3:
+		var pip := ColorRect.new()
+		pip.custom_minimum_size = Vector2(10, 14)
+		pip.color = Color("d9a441")
+		flask_row.add_child(pip)
+		flask_pips.append(pip)
 
 	# ── Cooldown 3 kỹ năng (góc dưới trái) ──
 	var cds := HBoxContainer.new()
@@ -111,6 +128,13 @@ func update_queen_hp(cur: int, mx: int) -> void:
 func update_hero_hp(cur: int, mx: int) -> void:
 	hero_bar.max_value = mx
 	hero_bar.value = cur
+
+
+## Stamina (0..1) + số bình estus còn của hero.
+func update_hero_stamina(frac: float, flasks: int) -> void:
+	hero_stamina_bar.value = clampf(frac, 0.0, 1.0) * 100.0
+	for i in flask_pips.size():
+		flask_pips[i].color = Color("d9a441") if i < flasks else Color(0.25, 0.2, 0.24)
 
 
 func set_fallen(count: int) -> void:
