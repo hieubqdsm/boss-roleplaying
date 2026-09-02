@@ -66,9 +66,10 @@ func step(dist_x: float, cfg: Dictionary, state: Dictionary, delta: float,
 
 	match phase:
 		PHASE_WINDUP:
-			if t >= float(cfg.get("windup_time", 0.3)):
+			# vung kiếm khi vẫn tiến — không đứng khựng
+			if t >= float(cfg.get("windup_time", 0.08)):
 				return _enter(state, PHASE_STRIKE, Action.STRIKE, 0.0)
-			return _keep(Action.WINDUP, 0.0)
+			return _keep(Action.WINDUP, signf(dist_x) * 0.6)
 
 		PHASE_STRIKE:
 			if t >= float(cfg.get("strike_time", 0.22)):

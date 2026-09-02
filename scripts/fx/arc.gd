@@ -1,12 +1,12 @@
 class_name SlashArcFX
 extends Node2D
 
-## Arc chém của Queen — FX hiển thị tầm đánh cận chiến, tự huỷ.
+## Vết chém của Queen — trăng khuyết trắng lõi + viền đỏ, rõ và đậm.
 
 var radius := 130.0
 var facing := 1
 var _t := 0.0
-const DURATION := 0.18
+const DURATION := 0.26
 
 
 func launch(r: float, dir: int) -> void:
@@ -23,10 +23,14 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var k := _t / DURATION
-	var col := Color(0.95, 0.55, 0.45, 0.85 * (1.0 - k))
-	# cung 100° hướng về phía trước (mặc định phải), lật theo facing
 	var a0 := -0.9 if facing > 0 else PI - 0.9
 	var a1 := 0.9 if facing > 0 else PI + 0.9
-	draw_arc(Vector2.ZERO, radius * (0.6 + 0.4 * k), a0, a1, 20, col, 5.0 * (1.0 - k * 0.6))
-	draw_arc(Vector2.ZERO, radius * 0.7 * (0.6 + 0.4 * k), a0, a1, 20,
-		Color(1.0, 0.85, 0.6, 0.5 * (1.0 - k)), 3.0)
+	# viền đỏ đậm
+	draw_arc(Vector2.ZERO, radius * (0.72 + 0.28 * k), a0, a1, 24,
+		Color(0.9, 0.2, 0.25, 0.85 * (1.0 - k)), 9.0 * (1.0 - k * 0.55))
+	# lõi trắng sáng
+	draw_arc(Vector2.ZERO, radius * (0.74 + 0.26 * k), a0, a1, 24,
+		Color(1.0, 0.96, 0.88, 0.95 * (1.0 - k)), 4.0)
+	# hào sáng trong
+	draw_arc(Vector2.ZERO, radius * (0.55 + 0.25 * k), a0, a1, 24,
+		Color(1.0, 0.85, 0.6, 0.55 * (1.0 - k)), 2.0)

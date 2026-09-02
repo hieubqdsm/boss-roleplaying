@@ -21,7 +21,7 @@ signal damage_taken(amount: int)
 @export var base_speed := 150.0
 @export var base_stagger := 0.3
 @export var attack_range := 58.0
-@export var windup_time := 0.3
+@export var windup_time := 0.08
 @export var strike_time := 0.22
 @export var recover_time := 0.35
 
@@ -176,7 +176,7 @@ func _physics_process(delta: float) -> void:
 		"attack_range": attack_range,
 		"preferred_range": float(stance["preferred_range"]),
 		"poke_rate": float(stance["poke_rate"]),
-		"windup_time": maxf(0.24, windup_time - 0.01 * int(_memory.get("deaths", 0))),
+		"windup_time": maxf(0.05, windup_time - 0.004 * int(_memory.get("deaths", 0))),
 		"strike_time": strike_time,
 		"recover_time": recover_time,
 		"stagger_time": _stagger,
@@ -239,9 +239,8 @@ func _apply_action(res: Dictionary, dist_x: float, delta: float) -> void:
 
 	match action:
 		BrainScript.Action.WINDUP:
-			sprite.play("idle")
-			# Người chơi không "nháy đỏ" như boss — chỉ cảnh giác một nhịp ngắn.
-			sprite.modulate = Color(1.0, 0.7, 0.7) if fmod(brain_state["timer"], 0.1) < 0.05 else Color.WHITE
+			sprite.play("run")   # vung khi đang tiến — hết khựng
+			sprite.modulate = Color(1.0, 0.7, 0.7)
 		BrainScript.Action.STRIKE:
 			if sprite.animation != "attack" or not sprite.is_playing():
 				sprite.play("attack")

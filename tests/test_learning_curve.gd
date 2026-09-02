@@ -38,7 +38,7 @@ func _test_learning_curve() -> void:
 	var memory := {"deaths": 0, "by": {}}
 	var cfg := {
 		"attack_range": 58.0, "preferred_range": 113.0, "poke_rate": 0.02,
-		"windup_time": 0.3, "strike_time": 0.22, "recover_time": 0.35,
+		"windup_time": 0.08, "strike_time": 0.22, "recover_time": 0.35,
 		"stagger_time": 0.3, "roll_time": 0.4, "sip_time": 1.2,
 	}
 
