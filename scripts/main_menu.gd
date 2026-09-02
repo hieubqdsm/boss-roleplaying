@@ -20,9 +20,9 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 10)
 	add_child(box)
 
-	var title := Style.label("BOSS", 44, Color("8f1d2c"))
+	var title := Style.label("BOSS", 44, Color("8f1d2c"), true)
 	box.add_child(title)
-	var title2 := Style.label("ROLEPLAYING", 30, Color("d9a441"))
+	var title2 := Style.label("ROLEPLAYING", 30, Color("d9a441"), true)
 	box.add_child(title2)
 	var subtitle := Style.label("Bạn là trùm cuối. Hãy sống sót.", 9, Color(0.62, 0.56, 0.5))
 	box.add_child(subtitle)

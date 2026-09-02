@@ -69,7 +69,7 @@ func _ready() -> void:
 	cd_nova = _cd_slot(cds, "NOVA   L")
 
 	# ── Banner giữa màn ──
-	banner = Style.label("", 22, Color("d9a441"))
+	banner = Style.label("", 22, Color("d9a441"), true)
 	banner.set_anchors_preset(Control.PRESET_CENTER)
 	banner.pivot_offset = Vector2(60, 12)
 	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

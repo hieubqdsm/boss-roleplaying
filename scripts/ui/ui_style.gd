@@ -5,6 +5,10 @@ class_name UIStyle
 
 const FONT_PATH := "res://assets/fonts/VT323-Regular.ttf"
 
+## VT323 nhỏ hơn Press Start 2P ở cùng point-size → nhân lên uniformly.
+## Chỉnh 1 hằng số này là đổi cỡ chữ toàn game.
+const FONT_SCALE := 1.4
+
 const COL_BG := Color("120b16")
 const COL_PANEL := Color(0.10, 0.07, 0.13, 0.94)
 const COL_ACCENT := Color("8f1d2c")
@@ -38,7 +42,10 @@ static func button(text: String, font_size: int = 14) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.add_theme_font_override("font", font())
-	b.add_theme_font_size_override("font_size", font_size)
+	b.add_theme_font_size_override("font_size", int(font_size * FONT_SCALE))
+	# pseudo-bold: outline 1px cùng màu chữ (VT323 không có weight đậm)
+	b.add_theme_constant_override("outline_size", 1)
+	b.add_theme_color_override("font_outline_color", COL_TEXT)
 	b.add_theme_color_override("font_color", COL_TEXT)
 	b.add_theme_color_override("font_hover_color", COL_GOLD)
 	b.add_theme_color_override("font_pressed_color", Color("ffcf70"))
@@ -51,12 +58,15 @@ static func button(text: String, font_size: int = 14) -> Button:
 	return b
 
 
-static func label(text: String, font_size: int, color: Color = COL_TEXT) -> Label:
+static func label(text: String, font_size: int, color: Color = COL_TEXT, bold := false) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.add_theme_font_override("font", font())
-	l.add_theme_font_size_override("font_size", font_size)
+	l.add_theme_font_size_override("font_size", int(font_size * FONT_SCALE))
 	l.add_theme_color_override("font_color", color)
+	if bold:
+		l.add_theme_constant_override("outline_size", 1)
+		l.add_theme_color_override("outline_color", color)
 	return l
 
 

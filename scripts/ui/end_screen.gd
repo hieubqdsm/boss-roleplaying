@@ -33,7 +33,7 @@ func _ready() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	_panel.add_child(box)
 
-	_title = Style.label("", 24)
+	_title = Style.label("", 24, Color("8f1d2c"), true)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_title)
 
