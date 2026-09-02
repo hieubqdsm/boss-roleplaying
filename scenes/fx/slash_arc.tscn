@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/fx/arc.gd" id="1_arc"]
+[ext_resource type="Script" path="res://scripts/fx/slash_arc.gd" id="1_arc"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/fx/fx_frames.tres" id="2_frames"]
 
-[node name="SlashArc" type="Node2D"]
+[node name="SlashArc" type="AnimatedSprite2D"]
+sprite_frames = ExtResource("2_frames")
+animation = &"slash_a"
 script = ExtResource("1_arc")

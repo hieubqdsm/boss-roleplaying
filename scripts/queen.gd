@@ -170,10 +170,10 @@ func _pending_hits(delta: float) -> void:
 		_slash_pending -= delta
 		if _slash_pending <= 0.0:
 			_skill_recovery = 0.55
-			# hiển thị arc tầm chém dù trúng hay hụt
+			# vết chém sprite đặt giữa thân và mép tầm chém
 			var arc := ArcScene.instantiate()
 			get_parent().add_child(arc)
-			arc.global_position = global_position + Vector2(0, -60)
+			arc.global_position = global_position + Vector2(slash_range * 0.5 * facing, -60)
 			arc.launch(slash_range, facing)
 			if is_instance_valid(_target) and not _target.is_dead():
 				var dx := (_target.global_position.x - global_position.x) * facing

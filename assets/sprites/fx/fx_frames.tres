@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=23 format=3]
+[gd_resource type="SpriteFrames" load_steps=32 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball_0.png" id="tex_fireball_0"]
 
@@ -44,6 +44,24 @@
 
 [ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_11.png" id="tex_skull_11"]
 
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_a_0.png" id="tex_slash_a_0"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_a_1.png" id="tex_slash_a_1"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_a_2.png" id="tex_slash_a_2"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_b_0.png" id="tex_slash_b_0"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_b_1.png" id="tex_slash_b_1"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_b_2.png" id="tex_slash_b_2"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_c_0.png" id="tex_slash_c_0"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_c_1.png" id="tex_slash_c_1"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/slash_c_2.png" id="tex_slash_c_2"]
+
 [resource]
 
 animations = [{
@@ -63,4 +81,22 @@ animations = [{
 "loop": true,
 "name": &"skull",
 "speed": 10.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_slash_a_0")}, {"duration": 1.0, "texture": ExtResource("tex_slash_a_1")}, {"duration": 1.0, "texture": ExtResource("tex_slash_a_2")}],
+"loop": false,
+"name": &"slash_a",
+"speed": 14.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_slash_b_0")}, {"duration": 1.0, "texture": ExtResource("tex_slash_b_1")}, {"duration": 1.0, "texture": ExtResource("tex_slash_b_2")}],
+"loop": false,
+"name": &"slash_b",
+"speed": 14.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_slash_c_0")}, {"duration": 1.0, "texture": ExtResource("tex_slash_c_1")}, {"duration": 1.0, "texture": ExtResource("tex_slash_c_2")}],
+"loop": false,
+"name": &"slash_c",
+"speed": 14.0
 }]

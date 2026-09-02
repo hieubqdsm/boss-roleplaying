@@ -145,13 +145,26 @@ def main():
             os.remove(os.path.join(bdir, f))
     sf = save_uniform(skull, 6, bdir, "skull_", rows=2)
 
+    # ── SLASH FX (vết chém Queen — "Pixel Art Sword Slash", CC0, 3 anim × 3 frame) ──
+    ss = Image.open(os.path.join(A, "sprites/fx/slash_sheet.png")).convert("RGBA")
+    for f in os.listdir(bdir):
+        if f.startswith("slash_"):
+            os.remove(os.path.join(bdir, f))
+    row_h = ss.height // 3
+    slash_anims = []
+    for row_i, name in enumerate(["slash_a", "slash_b", "slash_c"]):
+        band = ss.crop((0, row_i * row_h, ss.width, (row_i + 1) * row_h))
+        frames = save_frames(band, detect_columns(band), bdir, f"slash_{name[-1]}_")
+        print(f"slash/{name}: {len(frames)} frames")
+        slash_anims.append((name, frames, 14.0, False))
+
     emit_sprite_frames(
         os.path.join(bdir, "fx_frames.tres"),
         [
             ("bolt", bolt_frames, 10.0, True),
             ("ghost_vanish", gf, 9.0, False),
             ("skull", sf, 10.0, True),
-        ],
+        ] + slash_anims,
     )
     print("done")
 
