@@ -8,7 +8,7 @@ phase: dev                   # planned | dev | paused | done
 branch: feat/F-001-m0-vertical-slice
 handoff_kind: planned-next   # planned-next = làm tiếp luôn | pause = chờ người quyết
 current_focus: F-001         # id feature đang làm, hoặc "none"
-next_action: "Chờ TESTER playtest F-001 theo docs/PLAYTEST_QUEUE.md (mở Godot editor + F5). Pass → merge main + status shipped; fail → đọc playtest.notes sửa tiếp."
+next_action: "Tester chơi lại F-001 (đã sửa 4 feedback buổi 1: boss to ×3, bolt sprite riêng, respawn bằng Timer node + log [ARENA], reset máu queen mỗi round). Nếu còn lỗi 'không spawn hero' → mở Output panel xem log [ARENA] dừng ở dòng nào rồi báo agent. Pass → tester ghi playtest.result + merge main."
 
 # Evidence — việc ĐÃ xong trong session này, kèm bằng chứng (commit/file).
 # Không có bằng chứng = coi như chưa làm. (Ralph-handoff: evidence field)

@@ -122,7 +122,7 @@ func _try_bolt() -> void:
 	_anim_lock = 0.3
 	sprite.play("cast")
 	GameAudio.play_sfx("bolt_cast")
-	var muzzle := global_position + Vector2(34.0 * facing, -58.0)
+	var muzzle := global_position + Vector2(52.0 * facing, -86.0)
 	if phase2:
 		_spawn_bolt(muzzle, Vector2(facing, -0.14).normalized())
 		_spawn_bolt(muzzle, Vector2(facing, 0.14).normalized())
@@ -166,17 +166,17 @@ func _fire_nova() -> void:
 	GameAudio.play_sfx("nova")
 	var fx := NovaScene.instantiate()
 	get_parent().add_child(fx)
-	fx.global_position = global_position + Vector2(0, -56)
+	fx.global_position = global_position + Vector2(0, -84)
 	fx.launch(radius)
 	if is_instance_valid(_target) and not _target.is_dead():
-		var dist := _target.global_position.distance_to(global_position + Vector2(0, -48))
+		var dist := _target.global_position.distance_to(global_position + Vector2(0, -60))
 		if dist <= radius:
 			_hit_target(nova_damage, 520.0)
 	if phase2 and is_instance_valid(_target) and not _target.is_dead():
 		var skull := BoltScene.instantiate()
 		get_parent().add_child(skull)
 		skull.setup_skull(
-			global_position + Vector2(0, -120), bolt_speed * 0.45, 12, _target
+			global_position + Vector2(0, -170), bolt_speed * 0.45, 12, _target
 		)
 
 
@@ -220,15 +220,35 @@ func cooldown_fractions() -> Vector3:
 
 
 func _bob() -> void:
-	sprite.position.y = -56.0 + sin(Time.get_ticks_msec() * 0.004) * 3.0
+	sprite.position.y = -84.0 + sin(Time.get_ticks_msec() * 0.004) * 4.0
+
+
+var _phase2_tw: Tween
+
+
+func reset_for_round() -> void:
+	"""Mỗi round mới (hero hồi sinh): Queen hồi đầy máu, tắt phase 2."""
+	if dead:
+		return
+	if _phase2_tw != null and _phase2_tw.is_valid():
+		_phase2_tw.kill()
+	_phase2_tw = null
+	phase2 = false
+	modulate = Color.WHITE
+	_knock_x = 0.0
+	_invuln = 0.3
+	health.reset_to(health.max_health)
 
 
 func _on_health_changed(cur: int, mx: int) -> void:
 	if not phase2 and mx > 0 and float(cur) / float(mx) <= 0.4:
 		phase2 = true
-		var tw := create_tween().set_loops()
-		tw.tween_property(self, "modulate", Color(1.0, 0.82, 0.9), 0.4)
-		tw.tween_property(self, "modulate", Color(1.0, 0.95, 1.0), 0.4)
+		print("[QUEEN] phase 2 kích hoạt (%d/%d HP)" % [cur, mx])
+		if _phase2_tw != null and _phase2_tw.is_valid():
+			_phase2_tw.kill()
+		_phase2_tw = create_tween().set_loops()
+		_phase2_tw.tween_property(self, "modulate", Color(1.0, 0.82, 0.9), 0.4)
+		_phase2_tw.tween_property(self, "modulate", Color(1.0, 0.95, 1.0), 0.4)
 
 
 func _on_died() -> void:

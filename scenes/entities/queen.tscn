@@ -8,8 +8,8 @@
 script = ExtResource("1_queen")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-position = Vector2(0, -56)
-scale = Vector2(2, 2)
+position = Vector2(0, -84)
+scale = Vector2(3, 3)
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 

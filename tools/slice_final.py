@@ -102,9 +102,13 @@ def main():
         ],
     )
 
-    # ── BOLT (projectile của queen — frame 8..11 của sheet) ──
+    # ── BOLT (projectile của queen — sprite fire-ball riêng, không dùng sheet boss) ──
     bdir = os.path.join(A, "sprites/fx")
-    bolt_frames = [qf[8], qf[9], qf[10], qf[11]]
+    fb = Image.open(os.path.join(bdir, "fire-ball.png")).convert("RGBA")
+    for f in os.listdir(bdir):
+        if f.startswith("fireball_"):
+            os.remove(os.path.join(bdir, f))
+    bolt_frames = save_uniform(fb, 3, bdir, "fireball_")
 
     # ── HERO ──────────────────────────────────────────────
     hdir = os.path.join(A, "sprites/hero")

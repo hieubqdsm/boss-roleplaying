@@ -26,8 +26,9 @@ var fight_active := false
 var fight_time := 0.0
 var damage_dealt := 0
 var damage_taken := 0
-var _respawn_timer := 0.0
-var _end_timer := 0.0
+
+@onready var respawn_timer: Timer = $RespawnTimer
+@onready var end_timer: Timer = $EndTimer
 
 const ROMAN := ["I", "II", "III", "IV", "V"]
 
@@ -43,6 +44,8 @@ func _ready() -> void:
 	queen.health.health_changed.connect(hud.update_queen_hp)
 	hero.health.health_changed.connect(hud.update_hero_hp)
 	hud.setup(queen.health.max_health, hero.health.max_health)
+	respawn_timer.timeout.connect(_respawn)
+	end_timer.timeout.connect(_end_fight)
 	hud.set_round(1, MAX_ROUNDS)
 	GameAudio.play_music("fight")
 	_start_round(1)
@@ -53,25 +56,22 @@ func _process(delta: float) -> void:
 		return
 	fight_time += delta
 	hud.update_cooldowns(queen.cooldown_fractions())
-	if _respawn_timer > 0.0:
-		_respawn_timer -= delta
-		if _respawn_timer <= 0.0:
-			_respawn()
-	if _end_timer > 0.0:
-		_end_timer -= delta
-		if _end_timer <= 0.0:
-			_end_fight()
 
 
 func _start_round(round: int) -> void:
 	round_idx = round
 	fight_active = true
+	queen.reset_for_round()
 	hero.setup_round(round)
 	hero.position = Vector2(HERO_SPAWN_X, GROUND_Y)
 	hero.show()
 	hud.update_hero_hp(hero.health.health, hero.health.max_health)
+	hud.set_round(round, MAX_ROUNDS)
 	hud.show_banner("ASCENSION %s" % ROMAN[round - 1], 1.4)
 	GameAudio.play_sfx("round_start")
+	print("[ARENA] bắt đầu round %d/%d — hero HP %d, queen HP %d" % [
+		round, MAX_ROUNDS, hero.health.health, queen.health.health
+	])
 
 
 func _respawn() -> void:
@@ -79,20 +79,23 @@ func _respawn() -> void:
 
 
 func _on_hero_died() -> void:
-	damage_dealt += 0
-	hud.show_banner("THE HERO FALLS", 1.1)
 	var next := round_idx + 1
 	if next > MAX_ROUNDS:
+		print("[ARENA] hero gục lần cuối (round %d) → VICTORY sau %.1fs" % [round_idx, fight_time])
+		hud.show_banner("THE HERO FALLS", 1.1)
 		fight_active = false
-		_end_timer = 1.6
+		end_timer.start()
 		return
+	print("[ARENA] hero gục ở round %d → hồi sinh round %d sau %.1fs" % [round_idx, next, respawn_timer.wait_time])
+	hud.show_banner("THE HERO FALLS", 1.1)
 	round_idx = next
-	_respawn_timer = 2.2
+	respawn_timer.start()
 
 
 func _on_queen_died() -> void:
+	print("[ARENA] queen gục (round %d, %.1fs) → DEFEAT" % [round_idx, fight_time])
 	fight_active = false
-	_end_timer = 1.8
+	end_timer.start()
 
 
 func _end_fight() -> void:
@@ -108,3 +111,4 @@ func _end_fight() -> void:
 	pause_ui.process_mode = Node.PROCESS_MODE_DISABLED
 	Events.fight_ended.emit(victory, stats)
 	end_ui.show_result(victory, stats)
+	print("[ARENA] kết thúc — victory=%s stats=%s" % [str(victory), str(stats)])

@@ -1,12 +1,10 @@
-[gd_resource type="SpriteFrames" load_steps=24 format=3]
+[gd_resource type="SpriteFrames" load_steps=23 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/queen/f8.png" id="tex_f8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball_0.png" id="tex_fireball_0"]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/queen/f9.png" id="tex_f9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball_1.png" id="tex_fireball_1"]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/queen/f10.png" id="tex_f10"]
-
-[ext_resource type="Texture2D" path="res://assets/sprites/queen/f11.png" id="tex_f11"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball_2.png" id="tex_fireball_2"]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/fx/ghostv_0.png" id="tex_ghostv_0"]
 
@@ -49,7 +47,7 @@
 [resource]
 
 animations = [{
-"frames": [{"duration": 1.0, "texture": ExtResource("tex_f8")}, {"duration": 1.0, "texture": ExtResource("tex_f9")}, {"duration": 1.0, "texture": ExtResource("tex_f10")}, {"duration": 1.0, "texture": ExtResource("tex_f11")}],
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_fireball_0")}, {"duration": 1.0, "texture": ExtResource("tex_fireball_1")}, {"duration": 1.0, "texture": ExtResource("tex_fireball_2")}],
 "loop": true,
 "name": &"bolt",
 "speed": 10.0

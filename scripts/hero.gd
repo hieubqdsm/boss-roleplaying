@@ -151,6 +151,7 @@ func take_hit(dmg: int, from_x: float, knockback_x := 240.0) -> void:
 
 func _on_died() -> void:
 	dead = true
+	print("[HERO] gục ở round %d" % round_idx)
 	GameAudio.play_sfx("hero_die")
 	sprite.play("hurt")
 	var ghost := GhostFXScene.instantiate()

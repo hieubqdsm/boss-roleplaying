@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bj4ed344uumsy"
-path="res://.godot/imported/skull_6.png-49d2482b10b63d53b3ffadddc2b46424.ctex"
+uid="uid://dltqeh5xc0mu1"
+path="res://.godot/imported/fireball_0.png-e4087636491f51edde3af96e77b5a312.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/fx/skull_6.png"
-dest_files=["res://.godot/imported/skull_6.png-49d2482b10b63d53b3ffadddc2b46424.ctex"]
+source_file="res://assets/sprites/fx/fireball_0.png"
+dest_files=["res://.godot/imported/fireball_0.png-e4087636491f51edde3af96e77b5a312.ctex"]
 
 [params]
 

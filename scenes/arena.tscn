@@ -27,3 +27,11 @@ position = Vector2(150, 590)
 [node name="PauseUI" parent="." instance=ExtResource("6_pause")]
 
 [node name="EndUI" parent="." instance=ExtResource("7_end")]
+
+[node name="RespawnTimer" type="Timer" parent="."]
+wait_time = 2.2
+one_shot = true
+
+[node name="EndTimer" type="Timer" parent="."]
+wait_time = 1.6
+one_shot = true
