@@ -8,6 +8,7 @@ kèm trong repo chỉ gồm phần được dùng). Credits in-game: `scenes/cre
 | Asset | Nguồn | Tác giả | License |
 |---|---|---|---|
 | Sorceress (Queen) | [Animated Sorcerer Witch](https://opengameart.org/content/animated-sorcerer-witch) | (xem trang OGA) | **CC-BY 3.0** — bắt buộc ghi công |
+| Vết chém slash FX (9 frame) | [Pixel Art Sword Slash Effect](https://opengameart.org/content/pixel-art-sword-slash-effect) | (xem trang OGA) | CC0 |
 | Gothic Hero (idle/run/attack/jump/hurt) | [Gothicvania Patreon's Collection](https://opengameart.org/content/gothicvania-patreons-collection) | Luis Zuno (ansimuz) | Public domain (CC0) |
 | Fire Skull, Ghost (vanish), fire-ball | Gothicvania Patreon's Collection | Luis Zuno (ansimuz) | Public domain (CC0) |
 | Backgrounds: Gothic Castle, Old Dark Castle interior | Gothicvania Patreon's Collection | Luis Zuno (ansimuz) | Public domain (CC0) |
