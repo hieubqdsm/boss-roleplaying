@@ -23,7 +23,7 @@
 
 | ID | Tên | Priority | Status | Auto-test | Playtest | Assigned | Branch | Phụ thuộc |
 |---|---|---|---|---|---|---|---|---|
-| F-001 | M0 vertical slice — boss fight + menu đầy đủ | P1 | in_dev (sửa feedback playtest 1) | pass | pending | agent | feat/F-001-m0-vertical-slice | — |
+| F-001 | M0 vertical slice — boss fight + menu đầy đủ | P1 | shipped (đã merge main) | pass | pending | agent | main (từ feat/F-001) | — |
 
 _(Thêm hàng khi tạo feature mới. Cột status/auto-test/playtest cập nhật theo feature file.)_
 

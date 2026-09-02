@@ -5,10 +5,10 @@
 # Schema đầy đủ: docs/WORKFLOW.md §"Kỷ luật state".
 last_updated: "2026-09-02"
 phase: dev                   # planned | dev | paused | done
-branch: feat/F-001-m0-vertical-slice
+branch: main
 handoff_kind: planned-next   # planned-next = làm tiếp luôn | pause = chờ người quyết
-current_focus: F-001         # id feature đang làm, hoặc "none"
-next_action: "Chờ tester playtest F-001 (desktop F5 hoặc web: python -m http.server 8091 trong build/web). Playwright tự chơi đã verify toàn vòng trên web (bot hạ 4 hero, end-game + legacy OK). Hài lòng → playtest.result: pass → agent merge main."
+current_focus: F-001 (shipped lên main theo lệnh user; playtest.result vẫn do tester ghi)
+next_action: "F-001 đã trên main. Bước tiếp: playtest cảm nhận nhịp (hero không khựng, vết chém sprite, cân bằng cap né 0.85) → quyết định M1 (đa dạng hoá hero: dash, chém nhảy) hoặc M2 (hội thoại Mortholme)."
 
 # Evidence — việc ĐÃ xong trong session này, kèm bằng chứng (commit/file).
 # Không có bằng chứng = coi như chưa làm. (Ralph-handoff: evidence field)
