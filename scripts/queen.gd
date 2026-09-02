@@ -40,6 +40,7 @@ var _slash_pending := 0.0
 var _nova_pending := 0.0
 var _anim_lock := 0.0
 var _target: Node2D
+var _skill_recovery := 0.0  # > 0 = đang hồi sau chiêu → hero punish được
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -79,6 +80,7 @@ func _tick_cooldowns(delta: float) -> void:
 	_cd_nova = maxf(0.0, _cd_nova - delta)
 	_invuln = maxf(0.0, _invuln - delta)
 	_anim_lock = maxf(0.0, _anim_lock - delta)
+	_skill_recovery = maxf(0.0, _skill_recovery - delta)
 	if _anim_lock <= 0.0 and not sprite.is_playing():
 		sprite.play("idle")
 
@@ -123,6 +125,7 @@ func _try_bolt() -> void:
 		return
 	_cd_bolt = bolt_cooldown
 	_anim_lock = 0.3
+	_skill_recovery = 0.35
 	sprite.play("cast")
 	GameAudio.play_sfx("bolt_cast")
 	var muzzle := global_position + Vector2(52.0 * facing, -60.0)
@@ -155,6 +158,7 @@ func _pending_hits(delta: float) -> void:
 	if _slash_pending > 0.0:
 		_slash_pending -= delta
 		if _slash_pending <= 0.0:
+			_skill_recovery = 0.55
 			# hiển thị arc tầm chém dù trúng hay hụt
 			var arc := ArcScene.instantiate()
 			get_parent().add_child(arc)
@@ -172,6 +176,7 @@ func _pending_hits(delta: float) -> void:
 
 func _fire_nova() -> void:
 	var radius := nova_radius * (1.25 if phase2 else 1.0)
+	_skill_recovery = 0.6
 	GameAudio.play_sfx("nova")
 	var fx := NovaScene.instantiate()
 	get_parent().add_child(fx)
@@ -193,7 +198,7 @@ func is_dead() -> bool:
 	return dead
 
 
-## Telegraph cho AI hero đọc (né đòn).
+## Telegraph cho AI hero đọc (né đòn / punish).
 func is_charging_slash() -> bool:
 	return _slash_pending > 0.0
 
@@ -204,6 +209,11 @@ func is_charging_nova() -> bool:
 
 func get_nova_radius() -> float:
 	return nova_radius * (1.25 if phase2 else 1.0)
+
+
+## Vừa tung chiêu xong — hero kiểu "soul player" sẽ lao vào punish.
+func is_recovering() -> bool:
+	return _skill_recovery > 0.0
 
 
 func _hit_target(dmg: int, knockback: float, cause := "slash") -> void:

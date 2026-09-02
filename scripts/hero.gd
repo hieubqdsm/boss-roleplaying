@@ -1,10 +1,9 @@
 class_name Hero
 extends Node2D
 
-## Hero — AI thách đấu Queen, CHẾ ĐỘ ENDLESS:
-## - Chết → hồi sinh sau 2.2s với "ký ức" (biết né loại đòn từng giết mình)
-##   + aggression tăng dần CÓ TRẦN (không cộng máu/dame vô hạn).
-## - Não AI: HeroBrain (thuần logic). Ký ức nằm ở đây (sống qua các lần chết).
+## Hero — AI đánh như NGƯỜI CHƠI Dark Souls (không phải boss):
+## spacing + stamina, lăn né i-frames, punish khi Queen hồi chiêu,
+## húp estus khi gần chết. Não: HeroBrain. Ký ức học đòn sống qua các lần chết.
 
 const GhostFXScene := preload("res://scenes/fx/ghost_vanish.tscn")
 const SparkFXScene := preload("res://scenes/fx/hit_spark.tscn")
@@ -16,12 +15,12 @@ signal damage_taken(amount: int)
 
 @export var base_health := 55
 @export var base_damage := 7
-@export var base_speed := 120.0
-@export var base_stagger := 0.32
+@export var base_speed := 150.0
+@export var base_stagger := 0.3
 @export var attack_range := 58.0
-@export var windup_time := 0.45
+@export var windup_time := 0.3
 @export var strike_time := 0.22
-@export var recover_time := 0.55
+@export var recover_time := 0.35
 
 var health: HealthScript
 var brain := BrainScript.new()
@@ -36,10 +35,10 @@ var _memory := {"deaths": 0, "by": {}}
 
 var _knock_x := 0.0
 var _damage := 7
-var _speed := 120.0
-var _stagger := 0.32
+var _speed := 150.0
+var _stagger := 0.3
 var _respawn_flash := 0.0
-var _jump_base_y := -1.0
+var _last_action := -1
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -57,14 +56,13 @@ func setup_round(round: int) -> void:
 	invuln = 0.9
 	_respawn_flash = 0.9
 	_knock_x = 0.0
-	_jump_base_y = -1.0
-	# Aggression tăng theo số lần đã chết, có trần — không scale vô hạn.
+	_last_action = -1
 	var d := int(_memory.get("deaths", 0))
 	_damage = base_damage + mini(6, d)
 	_speed = base_speed + minf(30.0, 2.0 * d)
-	_stagger = maxf(0.14, base_stagger - 0.02 * d)
+	_stagger = maxf(0.16, base_stagger - 0.015 * d)
 	health.reset_to(base_health)
-	modulate.a = 1.0
+	modulate = Color.WHITE
 	sprite.play("idle")
 	print("[HERO] sống dậy lần thứ %d — đã học: %s" % [round, str(_memory.get("by", {}))])
 
@@ -80,32 +78,35 @@ func _physics_process(delta: float) -> void:
 		modulate.a = 1.0
 
 	if not is_instance_valid(target) or target.is_dead():
-		_end_jump()
 		sprite.play("idle")
 		return
 
 	var dist_x := target.global_position.x - global_position.x
 	var cfg := {
 		"attack_range": attack_range,
-		"windup_time": maxf(0.32, windup_time - 0.015 * int(_memory.get("deaths", 0))),
+		"preferred_range": attack_range + 55.0,
+		"windup_time": maxf(0.24, windup_time - 0.01 * int(_memory.get("deaths", 0))),
 		"strike_time": strike_time,
 		"recover_time": recover_time,
 		"stagger_time": _stagger,
-		"backstep_time": 0.32,
-		"jump_time": 0.45,
+		"roll_time": 0.4,
+		"sip_time": 1.2,
 	}
 	var res := brain.step(dist_x, cfg, brain_state, delta, _threats(), _memory)
 	_apply_action(res, dist_x, delta)
+	_last_action = int(res["action"])
 
-
-## Quét mối đe doạ xung quanh: telegraph của Queen + đạn đang bay tới gần.
 func _threats() -> Dictionary:
-	var th := {"nova_windup": false, "bolt_near": false, "slash_windup": false}
+	var th := {
+		"nova_windup": false, "bolt_near": false, "slash_windup": false,
+		"queen_recovery": false, "hp_frac": float(health.health) / float(health.max_health),
+	}
 	if is_instance_valid(target) and not target.is_dead() and target.has_method("is_charging_nova"):
 		if target.is_charging_nova():
 			var r: float = target.get_nova_radius()
 			th["nova_windup"] = global_position.distance_to(target.global_position) < r * 1.15
 		th["slash_windup"] = target.is_charging_slash()
+		th["queen_recovery"] = target.is_recovering()
 	for b in get_tree().get_nodes_in_group("queen_bolts"):
 		if is_instance_valid(b) and absf(b.global_position.x - global_position.x) < 240.0:
 			th["bolt_near"] = true
@@ -115,7 +116,28 @@ func _threats() -> Dictionary:
 
 func _apply_action(res: Dictionary, dist_x: float, delta: float) -> void:
 	var action := int(res["action"])
-	var speed_scale := 1.6 if action == BrainScript.Action.BACKSTEP else 1.0
+	# Báo log khi đổi trạng thái "đặc biệt"
+	if action != _last_action:
+		match action:
+			BrainScript.Action.ROLL:
+				invuln = maxf(invuln, 0.38)  # i-frame của cú lăn
+			BrainScript.Action.ENGAGE:
+				print("[HERO] lao vào tấn công")
+			BrainScript.Action.SIP:
+				print("[HERO] lùi ra húp estus (còn %d)" % int(brain_state.get("flasks", 0)))
+			BrainScript.Action.HEAL_APPLY:
+				health.heal(health.max_health)
+				GameAudio.play_sfx("round_start")
+				print("[HERO] húp xong — đầy máu!")
+
+	var speed_scale := 1.0
+	match action:
+		BrainScript.Action.ROLL:
+			speed_scale = 2.3
+		BrainScript.Action.RETREAT:
+			speed_scale = 1.3
+		BrainScript.Action.ENGAGE:
+			speed_scale = 1.45
 	var move := float(res["move_dir"]) * _speed * speed_scale
 	_knock_x = move_toward(_knock_x, 0.0, 900.0 * delta)
 	position.x += (move + _knock_x) * delta
@@ -123,55 +145,32 @@ func _apply_action(res: Dictionary, dist_x: float, delta: float) -> void:
 
 	match action:
 		BrainScript.Action.WINDUP:
-			_end_jump()
 			sprite.play("idle")
-			# Telegraph: nhấp nháy đỏ dồn dập trước khi vung kiếm.
-			sprite.modulate = Color(1.0, 0.45, 0.45) if fmod(brain_state["timer"], 0.16) < 0.08 else Color.WHITE
+			# Người chơi không "nháy đỏ" như boss — chỉ cảnh giác một nhịp ngắn.
+			sprite.modulate = Color(1.0, 0.7, 0.7) if fmod(brain_state["timer"], 0.1) < 0.05 else Color.WHITE
 		BrainScript.Action.STRIKE:
-			_end_jump()
 			if sprite.animation != "attack" or not sprite.is_playing():
 				sprite.play("attack")
 				_strike_hit()
 			sprite.modulate = Color.WHITE
-		BrainScript.Action.RECOVER:
-			_end_jump()
-			sprite.modulate = Color.WHITE
-			if sprite.animation != "attack":
-				sprite.play("idle")
-		BrainScript.Action.STAGGER:
-			_end_jump()
-			sprite.modulate = Color.WHITE
-			sprite.play("hurt")
-		BrainScript.Action.JUMP_DODGE:
-			_do_jump()
+		BrainScript.Action.ROLL:
 			sprite.play("jump")
-			sprite.modulate = Color.WHITE
-		BrainScript.Action.BACKSTEP:
-			_end_jump()
-			sprite.play("run")
+			sprite.modulate = Color(0.85, 0.9, 1.0)
+		BrainScript.Action.SIP:
+			sprite.play("idle")
+			sprite.modulate = Color(0.55, 1.0, 0.6)
+		BrainScript.Action.HEAL_APPLY:
+			sprite.modulate = Color(0.8, 1.0, 0.85)
+		BrainScript.Action.STAGGER:
+			sprite.play("hurt")
 			sprite.modulate = Color.WHITE
 		_:
-			_end_jump()
+			# SPACING / ENGAGE / RETREAT / RECOVER
 			sprite.modulate = Color.WHITE
-			if absf(dist_x) > 5.0:
+			if absf(move) > 12.0:
 				sprite.play("run")
 			else:
 				sprite.play("idle")
-
-
-## Nhảy né: nhấc người theo cung, bất tử ngắn trong lúc trên không.
-func _do_jump() -> void:
-	if _jump_base_y < 0.0:
-		_jump_base_y = position.y
-		invuln = maxf(invuln, 0.3)
-	var t: float = brain_state.get("timer", 0.0)
-	position.y = _jump_base_y - 72.0 * sin(PI * clampf(t / 0.45, 0.0, 1.0))
-
-
-func _end_jump() -> void:
-	if _jump_base_y >= 0.0:
-		position.y = _jump_base_y
-		_jump_base_y = -1.0
 
 
 func is_dead() -> bool:
@@ -198,14 +197,13 @@ func take_hit(dmg: int, from_x: float, knockback_x := 240.0, cause := "slash") -
 	get_parent().add_child(spark)
 	spark.global_position = global_position + Vector2(0, -44)
 	if not dead:
-		brain.on_damaged(brain_state)
+		brain.on_damaged(brain_state)  # mất thế — ngắt cả húp máu
 		_knock_x = knockback_x
 		sprite.modulate = Color.WHITE
 
 
 func _on_died() -> void:
 	dead = true
-	_end_jump()
 	_memory["deaths"] = int(_memory.get("deaths", 0)) + 1
 	var by: Dictionary = _memory.get("by", {})
 	by[cause_last] = int(by.get(cause_last, 0)) + 1
