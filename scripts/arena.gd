@@ -48,6 +48,7 @@ func _ready() -> void:
 	end_timer.timeout.connect(_end_fight)
 	queen.phase2_reached.connect(_on_phase2)
 	hud.set_fallen(0)
+	hero.load_memory()  # Mortholme: hero nhớ mọi ván trước qua user://hero_memory.cfg
 	GameAudio.play_music("fight")
 	_start_round(1)
 
@@ -64,6 +65,18 @@ func _on_phase2() -> void:
 	GameAudio.play_sfx("round_start")
 
 
+## Banner mở màn theo ký ức — mỗi lần gặp lại, hero "nhớ" bạn hơn.
+func _memory_banner() -> String:
+	var d := hero.deaths_total()
+	if d == 0:
+		return "A STRANGER COMES"
+	if d < 5:
+		return "THE HERO RETURNS — HE REMEMBERS"
+	if d < 15:
+		return "HE KNOWS YOUR TRICKS"
+	return "HE HAS DIED A THOUSAND DEATHS FOR YOU"
+
+
 func _start_round(round: int) -> void:
 	round_idx = round
 	fight_active = true
@@ -74,7 +87,7 @@ func _start_round(round: int) -> void:
 	hud.update_hero_hp(hero.health.health, hero.health.max_health)
 	hud.set_fallen(heroes_fallen)
 	if round == 1:
-		hud.show_banner("THE HERO APPROACHES", 1.4)
+		hud.show_banner(_memory_banner(), 1.6)
 	else:
 		hud.show_banner("ASCENSION %d" % round, 1.4)
 	GameAudio.play_sfx("round_start")
@@ -113,7 +126,9 @@ func _end_fight() -> void:
 		"damage_dealt": damage_dealt,
 		"damage_taken": damage_taken,
 		"heroes_fallen": heroes_fallen,
+		"legacy": hero.memory_summary(),
 	}
+	hero.save_memory(queen.skill_uses, true)
 	GameAudio.stop_music()
 	GameAudio.play_sfx("defeat")
 	pause_ui.process_mode = Node.PROCESS_MODE_DISABLED

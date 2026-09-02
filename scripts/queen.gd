@@ -41,6 +41,8 @@ var _nova_pending := 0.0
 var _anim_lock := 0.0
 var _target: Node2D
 var _skill_recovery := 0.0  # > 0 = đang hồi sau chiêu → hero punish được
+## Số lần người chơi tung từng kỹ năng trong ván — hero "đọc" thói quen qua đây.
+var skill_uses := {"slash": 0, "bolt": 0, "nova": 0}
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -114,6 +116,7 @@ func _try_slash() -> void:
 		return
 	_cd_slash = slash_cooldown
 	_slash_pending = 0.12
+	skill_uses["slash"] = int(skill_uses["slash"]) + 1
 	_anim_lock = 0.25
 	sprite.play("cast")
 	sprite.speed_scale = 1.6
@@ -124,6 +127,7 @@ func _try_bolt() -> void:
 	if _cd_bolt > 0.0:
 		return
 	_cd_bolt = bolt_cooldown
+	skill_uses["bolt"] = int(skill_uses["bolt"]) + 1
 	_anim_lock = 0.3
 	_skill_recovery = 0.35
 	sprite.play("cast")
@@ -140,6 +144,7 @@ func _try_nova() -> void:
 	if _cd_nova > 0.0:
 		return
 	_cd_nova = nova_cooldown
+	skill_uses["nova"] = int(skill_uses["nova"]) + 1
 	_nova_pending = 0.28
 	_anim_lock = 0.55
 	sprite.play("nova")

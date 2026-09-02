@@ -10,6 +10,8 @@ const SparkFXScene := preload("res://scenes/fx/hit_spark.tscn")
 const HealthScript := preload("res://scripts/combat/health.gd")
 const BrainScript := preload("res://scripts/combat/hero_brain.gd")
 
+const MEMORY_PATH := "user://hero_memory.cfg"
+
 signal died
 signal damage_taken(amount: int)
 
@@ -30,8 +32,79 @@ var invuln := 0.0
 var dead := false
 var round_idx := 1
 
-## Ký ức học đòn — KHÔNG reset khi hero sống dậy.
-var _memory := {"deaths": 0, "by": {}}
+## Ký ức học đòn — sống qua các lần chết VÀ qua các ván chơi (Mortholme style:
+## hero nhớ bạn giữa các session). Lưu user://hero_memory.cfg.
+var _memory := {"deaths": 0, "by": {}, "fights": 0, "queen_kills": 0, "usage": {}}
+
+
+func load_memory() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(MEMORY_PATH) != OK:
+		return
+	_memory = {
+		"deaths": int(cfg.get_value("hero", "deaths", 0)),
+		"by": cfg.get_value("hero", "by", {}),
+		"fights": int(cfg.get_value("hero", "fights", 0)),
+		"queen_kills": int(cfg.get_value("hero", "queen_kills", 0)),
+		"usage": cfg.get_value("hero", "usage", {}),
+	}
+	print("[HERO] ký ức qua các ván: chết %d lần (%s), đã đánh %d ván, từng hạ Queen %d lần" % [
+		_memory["deaths"], str(_memory["by"]), _memory["fights"], _memory["queen_kills"]
+	])
+
+
+func save_memory(usage_this_fight: Dictionary, queen_died: bool) -> void:
+	_memory["fights"] = int(_memory.get("fights", 0)) + 1
+	if queen_died:
+		_memory["queen_kills"] = int(_memory.get("queen_kills", 0)) + 1
+	var u: Dictionary = _memory.get("usage", {})
+	for k in usage_this_fight:
+		u[k] = int(u.get(k, 0)) + int(usage_this_fight[k])
+	_memory["usage"] = u
+	_persist_memory()
+
+
+func _persist_memory() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("hero", "deaths", int(_memory.get("deaths", 0)))
+	cfg.set_value("hero", "by", _memory.get("by", {}))
+	cfg.set_value("hero", "fights", int(_memory.get("fights", 0)))
+	cfg.set_value("hero", "queen_kills", int(_memory.get("queen_kills", 0)))
+	cfg.set_value("hero", "usage", _memory.get("usage", {}))
+	cfg.save(MEMORY_PATH)
+
+
+## Tổng số lần hero đã chết bởi đòn của người chơi (mọi ván).
+func deaths_total() -> int:
+	var d := 0
+	for k in ["slash", "bolt", "nova", "skull"]:
+		d += int(_memory.get("by", {}).get(k, 0))
+	return d
+
+
+## Tổng quan ký ức cho UI (màn kết thúc).
+func memory_summary() -> String:
+	return "Qua mọi ván: hero đã gục %d lần, từng hạ Queen %d lần" % [
+		int(_memory.get("deaths", 0)), int(_memory.get("queen_kills", 0))
+	]
+
+
+## Thế đánh áp theo THÓI QUEN của người chơi (đếm số lần bạn dùng từng kỹ năng,
+## KHÔNG đọc phím — đọc từ ký ức usage đã lưu).
+func _stance_cfg() -> Dictionary:
+	var u: Dictionary = _memory.get("usage", {})
+	var total := int(u.get("slash", 0)) + int(u.get("bolt", 0)) + int(u.get("nova", 0))
+	if total < 10:
+		return {"preferred_range": attack_range + 55.0, "poke_rate": 0.02}
+	var bolt_share := float(int(u.get("bolt", 0))) / float(total)
+	var slash_share := float(int(u.get("slash", 0))) / float(total)
+	if bolt_share > 0.5:
+		# Bạn là dạng pháo thủ → hero bám sát, poke liên tục
+		return {"preferred_range": attack_range + 20.0, "poke_rate": 0.035}
+	if slash_share > 0.6:
+		# Bạn chỉ biết chém → hero giữ xa, thả diều
+		return {"preferred_range": attack_range + 95.0, "poke_rate": 0.012}
+	return {"preferred_range": attack_range + 55.0, "poke_rate": 0.02}
 
 var _knock_x := 0.0
 var _damage := 7
@@ -82,9 +155,11 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var dist_x := target.global_position.x - global_position.x
+	var stance := _stance_cfg()
 	var cfg := {
 		"attack_range": attack_range,
-		"preferred_range": attack_range + 55.0,
+		"preferred_range": float(stance["preferred_range"]),
+		"poke_rate": float(stance["poke_rate"]),
 		"windup_time": maxf(0.24, windup_time - 0.01 * int(_memory.get("deaths", 0))),
 		"strike_time": strike_time,
 		"recover_time": recover_time,
@@ -208,6 +283,7 @@ func _on_died() -> void:
 	var by: Dictionary = _memory.get("by", {})
 	by[cause_last] = int(by.get(cause_last, 0)) + 1
 	_memory["by"] = by
+	_persist_memory()  # chết là ghi sổ ngay — đóng game giữa chừng vẫn nhớ
 	print("[HERO] gục ở round %d — chết vì '%s' (tổng chết: %d)" % [round_idx, cause_last, _memory["deaths"]])
 	GameAudio.play_sfx("hero_die")
 	sprite.play("hurt")

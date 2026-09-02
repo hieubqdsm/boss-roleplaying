@@ -61,9 +61,10 @@ func show_result(victory: bool, stats: Dictionary) -> void:
 	_title.add_theme_color_override("font_color", Color("8f1d2c"))
 	var minutes := int(stats.get("time", 0.0)) / 60
 	var seconds := int(stats.get("time", 0.0)) % 60
-	_stats.text = "Hero đã gục: %d   ·   Thời gian trị vì: %02d:%02d\nSát thương gây ra: %d   ·   Sát thương nhận: %d" % [
+	_stats.text = "Hero đã gục: %d   ·   Thời gian trị vì: %02d:%02d\nSát thương gây ra: %d   ·   Sát thương nhận: %d\n%s" % [
 		stats.get("heroes_fallen", 0), minutes, seconds,
-		stats.get("damage_dealt", 0), stats.get("damage_taken", 0)
+		stats.get("damage_dealt", 0), stats.get("damage_taken", 0),
+		stats.get("legacy", "")
 	]
 	visible = true
 

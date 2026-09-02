@@ -143,9 +143,10 @@ func step(dist_x: float, cfg: Dictionary, state: Dictionary, delta: float,
 			if adist <= attack_range and float(state["stamina"]) >= COST_ATTACK + 20.0:
 				return _enter(state, PHASE_ENGAGE, Action.ENGAGE, toward)
 			# 4b) Đầy sức + trong vùng ưa thích → chủ động áp sát (người chơi biết
-			#     tạo cơ hội, không chỉ đứng chờ Queen hụt chiêu)
+			#     tạo cơ hội, không chỉ đứng chờ Queen hụt chiêu). poke_rate cao
+			#     nếu người chơi thích pháo từ xa (hero bám sát).
 			if float(state["stamina"]) >= 80.0 and adist < preferred + 40.0 \
-					and rng.randf() < 0.02:
+					and rng.randf() < float(cfg.get("poke_rate", 0.02)):
 				return _enter(state, PHASE_ENGAGE, Action.ENGAGE, toward)
 			# 5) Cạn stamina → chủ động lùi ra hồi
 			if float(state["stamina"]) < 40.0 and adist < preferred:
