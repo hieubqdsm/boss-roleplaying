@@ -56,16 +56,14 @@ func _ready() -> void:
 
 
 func show_result(victory: bool, stats: Dictionary) -> void:
-	if victory:
-		_title.text = "THE QUEEN REIGNS"
-		_title.add_theme_color_override("font_color", Color("d9a441"))
-	else:
-		_title.text = "THE QUEEN FALLS"
-		_title.add_theme_color_override("font_color", Color("8f1d2c"))
+	# Endless: chỉ còn màn thua — tham số victory giữ cho tương thích signal.
+	_title.text = "THE QUEEN FALLS"
+	_title.add_theme_color_override("font_color", Color("8f1d2c"))
 	var minutes := int(stats.get("time", 0.0)) / 60
 	var seconds := int(stats.get("time", 0.0)) % 60
-	_stats.text = "Thời gian: %02d:%02d   ·   Sát thương gây ra: %d   ·   Sát thương nhận: %d" % [
-		minutes, seconds, stats.get("damage_dealt", 0), stats.get("damage_taken", 0)
+	_stats.text = "Hero đã gục: %d   ·   Thời gian trị vì: %02d:%02d\nSát thương gây ra: %d   ·   Sát thương nhận: %d" % [
+		stats.get("heroes_fallen", 0), minutes, seconds,
+		stats.get("damage_dealt", 0), stats.get("damage_taken", 0)
 	]
 	visible = true
 

@@ -12,8 +12,13 @@ var homing := false
 var target: Node2D
 var lifetime := 4.0
 var hit_radius := 26.0
+var cause := "bolt"
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+
+
+func _ready() -> void:
+	add_to_group("queen_bolts")
 
 
 func setup(muzzle: Vector2, dir: Vector2, proj_speed: float, dmg: int, hero: Node2D) -> void:
@@ -23,6 +28,7 @@ func setup(muzzle: Vector2, dir: Vector2, proj_speed: float, dmg: int, hero: Nod
 	damage = dmg
 	target = hero
 	homing = false
+	cause = "bolt"
 	_play("bolt")
 
 
@@ -33,6 +39,7 @@ func setup_skull(muzzle: Vector2, proj_speed: float, dmg: int, hero: Node2D) -> 
 	target = hero
 	homing = true
 	hit_radius = 34.0
+	cause = "skull"
 	direction = Vector2(randf_range(-0.4, 0.4), -1.0).normalized()
 	_play("skull")
 
@@ -62,7 +69,7 @@ func _physics_process(delta: float) -> void:
 		return
 	if is_instance_valid(target) and not target.is_dead():
 		if global_position.distance_to(target.global_position + Vector2(0, -44)) <= hit_radius:
-			target.take_hit(damage, global_position.x)
+			target.take_hit(damage, global_position.x, 240.0, cause)
 			var spark := SparkFXScene.instantiate()
 			get_parent().add_child(spark)
 			spark.global_position = global_position

@@ -2,12 +2,12 @@ class_name FightHUD
 extends CanvasLayer
 const Style := preload("res://scripts/ui/ui_style.gd")
 
-## HUD trận đấu: 2 thanh máu, pips round, cooldown 3 kỹ năng, banner thông báo.
+## HUD trận đấu (endless): 2 thanh máu, counter hero đã gục, cooldown 3 kỹ năng,
+## banner thông báo + banner phase 2.
 
 var queen_bar: ProgressBar
 var hero_bar: ProgressBar
-var round_label: Label
-var pips: Array[ColorRect] = []
+var fallen_label: Label
 var banner: Label
 var cd_slash: ColorRect
 var cd_bolt: ColorRect
@@ -37,23 +37,13 @@ func _ready() -> void:
 	queen_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	qside.add_child(queen_bar)
 
-	# ── Pips round (giữa) ──
+	# ── Counter hero gục (giữa) ──
 	var mid := VBoxContainer.new()
 	mid.alignment = BoxContainer.ALIGNMENT_CENTER
 	top.add_child(mid)
-	round_label = Style.label("ROUND", 9, Color(0.62, 0.56, 0.5))
-	round_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mid.add_child(round_label)
-	var pip_row := HBoxContainer.new()
-	pip_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	pip_row.add_theme_constant_override("separation", 6)
-	mid.add_child(pip_row)
-	for i in 5:
-		var pip := ColorRect.new()
-		pip.custom_minimum_size = Vector2(14, 14)
-		pip.color = Color(0.25, 0.2, 0.24)
-		pip_row.add_child(pip)
-		pips.append(pip)
+	fallen_label = Style.label("FALLEN 0", 10, Color("c8d4e0"))
+	fallen_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mid.add_child(fallen_label)
 
 	# ── Phe Hero (phải) ──
 	var hside := VBoxContainer.new()
@@ -123,10 +113,12 @@ func update_hero_hp(cur: int, mx: int) -> void:
 	hero_bar.value = cur
 
 
-func set_round(idx: int, max_rounds: int) -> void:
-	round_label.text = "ASCENSION %d/%d" % [idx, max_rounds]
-	for i in pips.size():
-		pips[i].color = Color("8f1d2c") if i < idx else Color(0.25, 0.2, 0.24)
+func set_fallen(count: int) -> void:
+	fallen_label.text = "FALLEN %d" % count
+
+
+func announce_phase2() -> void:
+	show_banner("THE QUEEN AWAKENS", 1.6)
 
 
 func update_cooldowns(fracs: Vector3) -> void:

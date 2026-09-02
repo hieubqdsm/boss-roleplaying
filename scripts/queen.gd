@@ -7,13 +7,16 @@ extends Node2D
 const SlashFXScene := preload("res://scenes/fx/hit_spark.tscn")
 const BoltScene := preload("res://scenes/entities/bolt.tscn")
 const NovaScene := preload("res://scenes/fx/nova.tscn")
+const ArcScene := preload("res://scenes/fx/slash_arc.tscn")
 const HealthScript := preload("res://scripts/combat/health.gd")
 
 signal damage_dealt(amount: int)
+signal damage_taken(amount: int)
 signal died
+signal phase2_reached
 
 @export var move_speed := 280.0
-@export var slash_range := 86.0
+@export var slash_range := 130.0
 @export var slash_damage := 12
 @export var slash_cooldown := 0.5
 @export var bolt_damage := 18
@@ -122,7 +125,7 @@ func _try_bolt() -> void:
 	_anim_lock = 0.3
 	sprite.play("cast")
 	GameAudio.play_sfx("bolt_cast")
-	var muzzle := global_position + Vector2(52.0 * facing, -86.0)
+	var muzzle := global_position + Vector2(52.0 * facing, -60.0)
 	if phase2:
 		_spawn_bolt(muzzle, Vector2(facing, -0.14).normalized())
 		_spawn_bolt(muzzle, Vector2(facing, 0.14).normalized())
@@ -151,10 +154,16 @@ func _spawn_bolt(muzzle: Vector2, dir: Vector2) -> void:
 func _pending_hits(delta: float) -> void:
 	if _slash_pending > 0.0:
 		_slash_pending -= delta
-		if _slash_pending <= 0.0 and is_instance_valid(_target) and not _target.is_dead():
-			var dx := (_target.global_position.x - global_position.x) * facing
-			if dx > -20.0 and dx < slash_range:
-				_hit_target(slash_damage, 220.0)
+		if _slash_pending <= 0.0:
+			# hiển thị arc tầm chém dù trúng hay hụt
+			var arc := ArcScene.instantiate()
+			get_parent().add_child(arc)
+			arc.global_position = global_position + Vector2(0, -60)
+			arc.launch(slash_range, facing)
+			if is_instance_valid(_target) and not _target.is_dead():
+				var dx := (_target.global_position.x - global_position.x) * facing
+				if dx > -20.0 and dx < slash_range:
+					_hit_target(slash_damage, 220.0, "slash")
 	if _nova_pending > 0.0:
 		_nova_pending -= delta
 		if _nova_pending <= 0.0:
@@ -171,7 +180,7 @@ func _fire_nova() -> void:
 	if is_instance_valid(_target) and not _target.is_dead():
 		var dist := _target.global_position.distance_to(global_position + Vector2(0, -60))
 		if dist <= radius:
-			_hit_target(nova_damage, 520.0)
+			_hit_target(nova_damage, 520.0, "nova")
 	if phase2 and is_instance_valid(_target) and not _target.is_dead():
 		var skull := BoltScene.instantiate()
 		get_parent().add_child(skull)
@@ -184,10 +193,23 @@ func is_dead() -> bool:
 	return dead
 
 
-func _hit_target(dmg: int, knockback: float) -> void:
+## Telegraph cho AI hero đọc (né đòn).
+func is_charging_slash() -> bool:
+	return _slash_pending > 0.0
+
+
+func is_charging_nova() -> bool:
+	return _nova_pending > 0.0
+
+
+func get_nova_radius() -> float:
+	return nova_radius * (1.25 if phase2 else 1.0)
+
+
+func _hit_target(dmg: int, knockback: float, cause := "slash") -> void:
 	if _target == null or not is_instance_valid(_target) or _target.is_dead():
 		return
-	_target.take_hit(dmg, global_position.x, knockback * facing)
+	_target.take_hit(dmg, global_position.x, knockback * facing, cause)
 	damage_dealt.emit(dmg)
 	var spark := SlashFXScene.instantiate()
 	get_parent().add_child(spark)
@@ -201,6 +223,7 @@ func apply_hero_hit(dmg: int, from_x: float) -> void:
 	_invuln = 0.35
 	_knock_x = 320.0 * (1 if global_position.x >= from_x else -1)
 	health.take_damage(dmg)
+	damage_taken.emit(dmg)
 	if not dead:
 		_anim_lock = 0.3
 		sprite.play("hurt")
@@ -244,6 +267,7 @@ func _on_health_changed(cur: int, mx: int) -> void:
 	if not phase2 and mx > 0 and float(cur) / float(mx) <= 0.4:
 		phase2 = true
 		print("[QUEEN] phase 2 kích hoạt (%d/%d HP)" % [cur, mx])
+		phase2_reached.emit()
 		if _phase2_tw != null and _phase2_tw.is_valid():
 			_phase2_tw.kill()
 		_phase2_tw = create_tween().set_loops()

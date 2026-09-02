@@ -12,6 +12,7 @@ func _init() -> void:
 	_test_approach_until_range()
 	_test_windup_strike_recover_cycle()
 	_test_stagger_interrupt()
+	_test_dodge_learning()
 	print("")
 	if _fails == 0:
 		print("test_hero_brain: ALL PASS")
@@ -71,6 +72,17 @@ func _test_stagger_interrupt() -> void:
 	_expect(brain.is_telegraphing(state) == false, "stagger tắt telegraph")
 	res = _tick(brain, state, 40.0, 25)  # 0.42s > stagger 0.3
 	_expect(res["action"] == BrainScript.Action.WINDUP, "hết stagger → quay lại WINDUP")
+
+
+func _test_dodge_learning() -> void:
+	var m0 := {"deaths": 0, "by": {}}
+	_expect(absf(BrainScript.dodge_chance(m0, "bolt") - 0.22) < 0.001, "chưa chết lần nào → né bolt cơ bản 0.22")
+	var m3 := {"deaths": 3, "by": {"bolt": 3}}
+	_expect(absf(BrainScript.dodge_chance(m3, "bolt") - (0.22 + 0.13 * 3)) < 0.001, "chết vì bolt ×3 → né bolt 0.61")
+	var m10 := {"deaths": 10, "by": {"bolt": 10, "nova": 9}}
+	_expect(absf(BrainScript.dodge_chance(m10, "bolt") - 0.8) < 0.001, "trần né 0.8")
+	# né loại đòn chưa từng giết mình giữ mức cơ bản
+	_expect(absf(BrainScript.dodge_chance(m3, "nova") - 0.45) < 0.001, "nova chưa từng giết → vẫn 0.45 cơ bản")
 
 
 func _expect(cond: bool, what: String) -> void:
