@@ -6,9 +6,9 @@
 last_updated: "2026-09-02"
 phase: dev                   # planned | dev | paused | done
 branch: feat/F-001-m0-vertical-slice
-handoff_kind: pause          # planned-next = làm tiếp luôn | pause = chờ người quyết
+handoff_kind: planned-next   # planned-next = làm tiếp luôn | pause = chờ người quyết
 current_focus: F-001         # id feature đang làm, hoặc "none"
-next_action: "Nhận godot_exe từ user → ghi docs/LOCAL.md → chạy import (godot --headless --path . --import) + smoke (godot --headless --path . --quit) + test (godot --headless --path . -s res://tests/test_hero_brain.gd); sạch lỗi → F-001 dev_done + đẩy PLAYTEST_QUEUE."
+next_action: "Chờ TESTER playtest F-001 theo docs/PLAYTEST_QUEUE.md (mở Godot editor + F5). Pass → merge main + status shipped; fail → đọc playtest.notes sửa tiếp."
 
 # Evidence — việc ĐÃ xong trong session này, kèm bằng chứng (commit/file).
 # Không có bằng chứng = coi như chưa làm. (Ralph-handoff: evidence field)
@@ -18,16 +18,15 @@ done:
   - "Tải asset thật: sprite Queen (sorceress CC-BY), Hero + gothic castle + FX (Gothicvania CC0, ansimuz), 2 nhạc loop CC0, 11 SFX CC0 (Juhani Junkala), font Press Start 2P (commit 2c76afe, assets/CREDITS.md)"
   - "Pipeline cắt frame + sinh SpriteFrames .tres bằng Python (tools/inspect_sprites.py, tools/slice_final.py — commit 2c76afe)"
   - "Toàn bộ source game M0: project.godot (input map, autoload×3, bus layout), arena fight 5 round, Queen 3 skill + phase 2, Hero AI (HeroBrain RefCounted test được), menu đầy đủ main/settings/pause/end/credits (commit 2c76afe)"
-  - "Auto-test tĩnh PASS: validate_scripts (Godot MCP headless) 20/20 file .gd không lỗi parse; read_scene parse OK arena + main_menu, .tres SpriteFrames load được (session 2026-09-02, chưa có commit riêng — nằm trong 2c76afe)"
+  - "Auto-test tĩnh PASS: validate_scripts (Godot MCP headless) 20/20 file .gd không lỗi parse; read_scene parse OK arena + main_menu, .tres SpriteFrames load được (commit 2c76afe)"
+  - "Nhận godot_exe từ user, ghi docs/LOCAL.md (gitignored)"
+  - "Auto-test RUNTIME PASS: --import sạch (93 asset) · smoke --quit exit 0 · tests/test_hero_brain.gd 9/9 PASS (sau khi sửa kỳ vọng frame trong test) · arena.tscn headless 120 frame không lỗi → F-001 auto_test: pass, status dev_done, đẩy PLAYTEST_QUEUE"
 
 # Blocker — mỗi dòng: '<cái gì> (→ <điều kiện để gỡ>)'. Rỗng = không kẹt.
-blockers:
-  - "Chưa có đường dẫn godot_exe trên máy user (→ user trả lời câu hỏi cuối session; ghi vào docs/LOCAL.md rồi gỡ)"
+blockers: []
 
 # Quyết định đang chờ người (chỉ bắt buộc khi handoff_kind: pause).
-decisions_pending:
-  - "User trả lời: đường dẫn godot exe (bản _console nếu Windows, vd D:\\Tools\\Godot_v4.7.1\\Godot_v4.7.1-stable_win64_console.exe?) — cần cho auto-test runtime + import asset lần đầu"
-  - "(tuỳ chọn) User có muốn mở Godot editor lần đầu để import asset + xem scene không — agent không tự mở (AGENTS.md §0.2)"
+decisions_pending: []
 ---
 
 # Session state — Boss Roleplaying

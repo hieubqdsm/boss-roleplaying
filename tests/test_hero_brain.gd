@@ -55,9 +55,9 @@ func _test_windup_strike_recover_cycle() -> void:
 	_tick(brain, state, 40.0, 1)  # vào windup
 	var res := _tick(brain, state, 40.0, 30)  # 0.5s >= windup
 	_expect(res["action"] == BrainScript.Action.STRIKE, "hết windup → STRIKE (đúng 1 frame)")
-	res = _tick(brain, state, 40.0, 1)
+	res = _tick(brain, state, 40.0, 15)  # 0.25s >= strike_time 0.22
 	_expect(res["action"] == BrainScript.Action.RECOVER, "xong strike → RECOVER")
-	res = _tick(brain, state, 500.0, 40)
+	res = _tick(brain, state, 500.0, 36)  # 0.6s >= recover 0.55
 	_expect(res["action"] == BrainScript.Action.APPROACH, "hết recover → APPROACH")
 
 

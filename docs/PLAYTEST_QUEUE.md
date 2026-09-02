@@ -17,7 +17,7 @@
 
 | ID | Tên | Branch | Checklist | Ghi chú chạy | Kết quả |
 |---|---|---|---|---|---|
-| _<F-xxx>_ | _<tên>_ | _feat/F-xxx-slug_ | _xem F-xxx.md_ | _<cách chạy>_ | _pending_ |
+| F-001 | M0 vertical slice — boss fight + menu đầy đủ | feat/F-001-m0-vertical-slice | xem docs/features/F-001.md | Mở Godot editor tại repo → F5 (main scene). Điều khiển: A/D di chuyển, J chém, K pháo, L nova, ESC pause. Asset đã import sẵn. | pending |
 
 _(Trống = chưa có feature nào sẵn sàng test.)_
 
