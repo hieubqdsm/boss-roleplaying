@@ -9,6 +9,7 @@ const BoltScene := preload("res://scenes/entities/bolt.tscn")
 const NovaScene := preload("res://scenes/fx/nova.tscn")
 const ArcScene := preload("res://scenes/fx/slash_arc.tscn")
 const HealthScript := preload("res://scripts/combat/health.gd")
+const DebugDrawScript := preload("res://scripts/fx/debug_draw.gd")
 
 signal damage_dealt(amount: int)
 signal damage_taken(amount: int)
@@ -52,6 +53,11 @@ func _ready() -> void:
 	health.health_changed.connect(_on_health_changed)
 	health.died.connect(_on_died)
 	sprite.play("idle")
+	_dbg = DebugDrawScript.new()
+	add_child(_dbg)
+
+
+var _dbg: DebugDraw
 
 
 func setup(target: Node2D, bounds_x: Vector2, ground_y: float) -> void:
@@ -259,25 +265,27 @@ func cooldown_fractions() -> Vector3:
 
 func _bob() -> void:
 	sprite.position.y = -84.0 + sin(Time.get_ticks_msec() * 0.004) * 4.0
+	_dbg.visible = GameSettings.debug_hitbox
 	if GameSettings.debug_hitbox:
-		queue_redraw()
+		_dbg.shapes = _debug_shapes()
 
 
-## Debug: tầm chém (đường dọc), vòng nova, tâm nhận đòn.
-## XANH LÁ = đang bất tử (i-frames) — hero không gây được sát thương lúc này.
-func _draw() -> void:
-	if not GameSettings.debug_hitbox:
-		return
-	var col := Color(0.25, 1.0, 0.45, 0.9) if _invuln > 0.0 else Color(1.0, 0.3, 0.3, 0.85)
-	# tầm chém
-	draw_line(Vector2(slash_range * facing, -150.0), Vector2(slash_range * facing, 30.0), col, 2.0)
-	# vòng nova (phía tâmQueen -60)
-	var c := Color(col.r, col.g, col.b, 0.65)
-	draw_arc(Vector2(0, -60.0), get_nova_radius(), 0, TAU, 48, c, 1.5)
-	# tâm nhận đòn của hero tính từ Queen (khoảng cách tới hero + anchor)
+## Debug: ĐỎ = thân dính đòn / XANH LÁ = đang bất tử (đòn hero vô hiệu).
+## VÀNG = tầm kỹ năng, TÍM = vòng nova. Vẽ qua DebugDraw (z_index cao, đè sprite).
+func _debug_shapes() -> Array:
+	var body_col := Color(0.25, 1.0, 0.45, 0.9) if _invuln > 0.0 else Color(1.0, 0.3, 0.3, 0.85)
+	var shapes := [
+		{"type": "rect", "pos": Vector2(-34, -160), "size": Vector2(68, 160), "color": body_col},
+		{"type": "line", "from": Vector2(slash_range * facing, -150), "to": Vector2(slash_range * facing, 30),
+			"color": Color(1.0, 0.85, 0.3, 0.8)},
+		{"type": "arc", "pos": Vector2(0, -60), "radius": get_nova_radius(),
+			"color": Color(0.7, 0.4, 1.0, 0.6), "points": 48},
+	]
 	if is_instance_valid(_target) and not _target.is_dead():
 		var hx := _target.global_position.x - global_position.x
-		draw_line(Vector2(hx, -70.0), Vector2(hx, -20.0), c, 1.0)
+		shapes.append({"type": "line", "from": Vector2(hx, -70), "to": Vector2(hx, -20),
+			"color": Color(1, 1, 1, 0.5), "width": 1.0})
+	return shapes
 
 
 var _phase2_tw: Tween

@@ -9,6 +9,7 @@ const GhostFXScene := preload("res://scenes/fx/ghost_vanish.tscn")
 const SparkFXScene := preload("res://scenes/fx/hit_spark.tscn")
 const HealthScript := preload("res://scripts/combat/health.gd")
 const BrainScript := preload("res://scripts/combat/hero_brain.gd")
+const DebugDrawScript := preload("res://scripts/fx/debug_draw.gd")
 
 const MEMORY_PATH := "user://hero_memory.cfg"
 
@@ -120,6 +121,11 @@ func _ready() -> void:
 	health = $Health
 	health.died.connect(_on_died)
 	sprite.play("idle")
+	_dbg = DebugDrawScript.new()
+	add_child(_dbg)
+
+
+var _dbg: DebugDraw
 
 
 func setup_round(round: int) -> void:
@@ -170,8 +176,9 @@ func _physics_process(delta: float) -> void:
 	var res := brain.step(dist_x, cfg, brain_state, delta, _threats(), _memory)
 	_apply_action(res, dist_x, delta)
 	_last_action = int(res["action"])
+	_dbg.visible = GameSettings.debug_hitbox
 	if GameSettings.debug_hitbox:
-		queue_redraw()
+		_dbg.shapes = _debug_shapes()
 
 func _threats() -> Dictionary:
 	var th := {
@@ -254,20 +261,21 @@ func is_dead() -> bool:
 	return dead
 
 
-## Debug: tầm đánh + hitbox nhận đạn. XANH LÁ = đang bất tử
-## (i-frame lăn / mới hồi sinh) — Queen không gây được sát thương.
-func _draw() -> void:
-	if not GameSettings.debug_hitbox:
-		return
+## Debug: ĐỎ = hitbox thân (đạn/phép của Queen trúng đây) / XANH LÁ = bất tử
+## (i-frame lăn, mới hồi sinh). VÀNG = tầm chém của hero.
+func _debug_shapes() -> Array:
 	var dodging := invuln > 0.0 or brain.is_rolling(brain_state)
 	var col := Color(0.25, 1.0, 0.45, 0.9) if dodging else Color(1.0, 0.3, 0.3, 0.85)
+	var shapes := [
+		{"type": "arc", "pos": Vector2(0, -44), "radius": 26.0, "color": col, "points": 24},
+		{"type": "dot", "pos": Vector2(0, -44), "radius": 2.0, "color": col},
+	]
 	var dir := 1.0
 	if is_instance_valid(target):
 		dir = signf(target.global_position.x - global_position.x)
-	# tầm chém thực tế của hero (attack_range * 1.35 khi vung)
-	draw_line(Vector2(dir * attack_range * 1.35, -110.0), Vector2(dir * attack_range * 1.35, 20.0), col, 2.0)
-	# hitbox nhận đạn (anchor -44, r=26)
-	draw_arc(Vector2(0, -44.0), 26.0, 0, TAU, 24, col, 1.5)
+	shapes.append({"type": "line", "from": Vector2(dir * attack_range * 1.35, -110),
+		"to": Vector2(dir * attack_range * 1.35, 20), "color": Color(1.0, 0.85, 0.3, 0.8)})
+	return shapes
 
 
 func _strike_hit() -> void:
