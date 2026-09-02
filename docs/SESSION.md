@@ -3,7 +3,7 @@
 # Quy tắc: mỗi trường là một "logged fact". Agent/dev khi resume CHỈ đọc được
 # từ đây, KHÔNG được giữ state trong hội thoại (model-visible ⟺ logged).
 # Schema đầy đủ: docs/WORKFLOW.md §"Kỷ luật state".
-last_updated: "{{DATE}}"
+last_updated: "2026-09-02"
 phase: planned                 # planned | dev | paused | done
 branch: main
 handoff_kind: planned-next     # planned-next = làm tiếp luôn | pause = chờ người quyết
@@ -22,7 +22,7 @@ decisions_pending:
   - "Chưa chốt mô tả game + milestone M0 (xem docs/ROADMAP.md)"
 ---
 
-# Session state — {{PROJECT_NAME}}
+# Session state — Boss Roleplaying
 
 > **Đọc file này trước.** Đây là entry point resume cho bất kỳ AI/dev nào vào session.
 > Workflow đầy đủ: `docs/WORKFLOW.md`.

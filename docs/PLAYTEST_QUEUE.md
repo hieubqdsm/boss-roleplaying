@@ -1,4 +1,4 @@
-# Playtest Queue — {{PROJECT_NAME}}
+# Playtest Queue — Boss Roleplaying
 
 > Worklist hằng ngày của **tester**. Mỗi feature đến `dev_done`/`playtesting` sẽ được agent đẩy vào đây.
 > Cách report kết quả: xem `docs/WORKFLOW.md` §"Cách TESTER report".

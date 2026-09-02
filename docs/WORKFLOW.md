@@ -1,4 +1,4 @@
-# Workflow — {{PROJECT_NAME}}
+# Workflow — Boss Roleplaying
 
 Quy trình làm việc cho phát triển game Godot với **agent AI + dev + tester tay**.
 Mọi state nằm trong file đã commit → bất kỳ AI/dev/tester nào cũng resume được.

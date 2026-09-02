@@ -1,4 +1,4 @@
-# ROADMAP — {{PROJECT_NAME}}
+# ROADMAP — Boss Roleplaying
 
 > Plan tổng thể của game. Agent/dev cập nhật trạng thái feature ở đây.
 > Source of truth chi tiết nằm ở `docs/features/F-xxx.md` (file này chỉ là bản đồ lớn).
@@ -6,7 +6,7 @@
 
 ## Game (chưa chốt)
 
-- **Tên:** {{PROJECT_NAME}}
+- **Tên:** Boss Roleplaying
 - **Mô tả (1 dòng):** _<điền: dạng game gì, cảm xúc cốt lõi>_
 - **Engine:** Godot 4.7 (theo MCP)
 - **Nền tảng mục tiêu:** _<PC / web / mobile>_
