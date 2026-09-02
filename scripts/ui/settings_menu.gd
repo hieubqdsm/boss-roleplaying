@@ -33,6 +33,9 @@ func _ready() -> void:
 	_toggle_row("V-Sync", GameSettings.vsync, func(pressed: bool) -> void:
 		GameSettings.vsync = pressed
 	)
+	_toggle_row("Hitbox debug (F9)", GameSettings.debug_hitbox, func(pressed: bool) -> void:
+		GameSettings.debug_hitbox = pressed
+	)
 
 	var back := Style.button("ĐÓNG", 11)
 	back.pressed.connect(_on_back)

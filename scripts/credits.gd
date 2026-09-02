@@ -22,7 +22,7 @@ func _ready() -> void:
 	box.add_child(Style.label("CREDITS", 18, Color("d9a441")))
 	box.add_child(_line("BOSS ROLEPLAYING — M0 vertical slice", 9, Color("e8dcc8")))
 
-	var credit_text := "Sorceress sprite — 'Animated Sorcerer Witch' (CC-BY 3.0)\n    nguồn: opengameart.org/content/animated-sorcerer-witch\n\nGothic Hero, Gothic Castle, Old Dark Castle, Fire Skull,\nGhost, Hell Beast fireball — 'Gothicvania Patreon's\nCollection' by Luis Zuno (ansimuz) — public domain (CC0)\n    nguồn: opengameart.org/content/gothicvania-patreons-collection\n\nNhạc: '8-bit Monstervania I' (CC0),\n    'Abandoned Castle loop' by starninjas (CC0)\n\nSFX: 'The Essential Retro Video Game Sound Effects\n    Collection [512 sounds]' by Juhani Junkala (CC0)\n\nFont: Press Start 2P — OFL (Google Fonts)"
+	var credit_text := "Sorceress sprite — 'Animated Sorcerer Witch' (CC-BY 3.0)\n    nguồn: opengameart.org/content/animated-sorcerer-witch\n\nGothic Hero, Gothic Castle, Old Dark Castle, Fire Skull,\nGhost, Hell Beast fireball — 'Gothicvania Patreon's\nCollection' by Luis Zuno (ansimuz) — public domain (CC0)\n    nguồn: opengameart.org/content/gothicvania-patreons-collection\n\nNhạc: '8-bit Monstervania I' (CC0),\n    'Abandoned Castle loop' by starninjas (CC0)\n\nSFX: 'The Essential Retro Video Game Sound Effects\n    Collection [512 sounds]' by Juhani Junkala (CC0)\n\nFont: VT323 (hỗ trợ tiếng Việt) — OFL (Google Fonts)"
 	var body := Style.label(credit_text, 8, Color(0.62, 0.56, 0.5))
 	box.add_child(body)
 

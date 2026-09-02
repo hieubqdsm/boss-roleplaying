@@ -24,7 +24,7 @@ kèm trong repo chỉ gồm phần được dùng). Credits in-game: `scenes/cre
 
 | Asset | Nguồn | License |
 |---|---|---|
-| Press Start 2P | Google Fonts (`ofl/pressstart2p`) | SIL OFL 1.1 |
+| VT323 (thay Press Start 2P — hỗ trợ tiếng Việt) | Google Fonts (`ofl/vt323`) | SIL OFL 1.1 |
 
 ## Ghi chú pipeline
 

@@ -259,6 +259,25 @@ func cooldown_fractions() -> Vector3:
 
 func _bob() -> void:
 	sprite.position.y = -84.0 + sin(Time.get_ticks_msec() * 0.004) * 4.0
+	if GameSettings.debug_hitbox:
+		queue_redraw()
+
+
+## Debug: tầm chém (đường dọc), vòng nova, tâm nhận đòn.
+## XANH LÁ = đang bất tử (i-frames) — hero không gây được sát thương lúc này.
+func _draw() -> void:
+	if not GameSettings.debug_hitbox:
+		return
+	var col := Color(0.25, 1.0, 0.45, 0.9) if _invuln > 0.0 else Color(1.0, 0.3, 0.3, 0.85)
+	# tầm chém
+	draw_line(Vector2(slash_range * facing, -150.0), Vector2(slash_range * facing, 30.0), col, 2.0)
+	# vòng nova (phía tâmQueen -60)
+	var c := Color(col.r, col.g, col.b, 0.65)
+	draw_arc(Vector2(0, -60.0), get_nova_radius(), 0, TAU, 48, c, 1.5)
+	# tâm nhận đòn của hero tính từ Queen (khoảng cách tới hero + anchor)
+	if is_instance_valid(_target) and not _target.is_dead():
+		var hx := _target.global_position.x - global_position.x
+		draw_line(Vector2(hx, -70.0), Vector2(hx, -20.0), c, 1.0)
 
 
 var _phase2_tw: Tween

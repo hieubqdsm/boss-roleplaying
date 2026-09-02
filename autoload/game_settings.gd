@@ -15,6 +15,14 @@ var music_volume := 0.6
 var sfx_volume := 0.8
 var fullscreen := false
 var vsync := true
+var debug_hitbox := false
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("debug_hitbox"):
+		debug_hitbox = not debug_hitbox
+		save_settings()
+		print("[SETTINGS] debug hitbox: %s" % str(debug_hitbox))
 
 
 func _ready() -> void:
@@ -31,6 +39,7 @@ func load_settings() -> void:
 	sfx_volume = cfg.get_value(SECTION, "sfx_volume", sfx_volume)
 	fullscreen = cfg.get_value(SECTION, "fullscreen", fullscreen)
 	vsync = cfg.get_value(SECTION, "vsync", vsync)
+	debug_hitbox = cfg.get_value(SECTION, "debug_hitbox", debug_hitbox)
 
 
 func save_settings() -> void:
@@ -40,6 +49,7 @@ func save_settings() -> void:
 	cfg.set_value(SECTION, "sfx_volume", sfx_volume)
 	cfg.set_value(SECTION, "fullscreen", fullscreen)
 	cfg.set_value(SECTION, "vsync", vsync)
+	cfg.set_value(SECTION, "debug_hitbox", debug_hitbox)
 	cfg.save(SETTINGS_PATH)
 
 

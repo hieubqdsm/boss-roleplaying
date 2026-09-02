@@ -170,6 +170,8 @@ func _physics_process(delta: float) -> void:
 	var res := brain.step(dist_x, cfg, brain_state, delta, _threats(), _memory)
 	_apply_action(res, dist_x, delta)
 	_last_action = int(res["action"])
+	if GameSettings.debug_hitbox:
+		queue_redraw()
 
 func _threats() -> Dictionary:
 	var th := {
@@ -250,6 +252,22 @@ func _apply_action(res: Dictionary, dist_x: float, delta: float) -> void:
 
 func is_dead() -> bool:
 	return dead
+
+
+## Debug: tầm đánh + hitbox nhận đạn. XANH LÁ = đang bất tử
+## (i-frame lăn / mới hồi sinh) — Queen không gây được sát thương.
+func _draw() -> void:
+	if not GameSettings.debug_hitbox:
+		return
+	var dodging := invuln > 0.0 or brain.is_rolling(brain_state)
+	var col := Color(0.25, 1.0, 0.45, 0.9) if dodging else Color(1.0, 0.3, 0.3, 0.85)
+	var dir := 1.0
+	if is_instance_valid(target):
+		dir = signf(target.global_position.x - global_position.x)
+	# tầm chém thực tế của hero (attack_range * 1.35 khi vung)
+	draw_line(Vector2(dir * attack_range * 1.35, -110.0), Vector2(dir * attack_range * 1.35, 20.0), col, 2.0)
+	# hitbox nhận đạn (anchor -44, r=26)
+	draw_arc(Vector2(0, -44.0), 26.0, 0, TAU, 24, col, 1.5)
 
 
 func _strike_hit() -> void:

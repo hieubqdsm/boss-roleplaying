@@ -3,7 +3,7 @@ class_name UIStyle
 ## Helper tĩnh tạo font/stylebox cho mọi UI — giữ menu code gọn, đồng bộ màu.
 ## Font size áp qua add_theme_font_size_override ở từng control (Button/Label helper lo sẵn).
 
-const FONT_PATH := "res://assets/fonts/PressStart2P-Regular.ttf"
+const FONT_PATH := "res://assets/fonts/VT323-Regular.ttf"
 
 const COL_BG := Color("120b16")
 const COL_PANEL := Color(0.10, 0.07, 0.13, 0.94)
