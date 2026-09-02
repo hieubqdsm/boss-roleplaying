@@ -6,9 +6,9 @@
 last_updated: "2026-09-02"
 phase: dev                   # planned | dev | paused | done
 branch: feat/F-001-m0-vertical-slice
-handoff_kind: planned-next   # planned-next = làm tiếp luôn | pause = chờ người quyết
+handoff_kind: pause          # planned-next = làm tiếp luôn | pause = chờ người quyết
 current_focus: F-001         # id feature đang làm, hoặc "none"
-next_action: "Tester chơi lại F-001 (đã sửa 4 feedback buổi 1: boss to ×3, bolt sprite riêng, respawn bằng Timer node + log [ARENA], reset máu queen mỗi round). Nếu còn lỗi 'không spawn hero' → mở Output panel xem log [ARENA] dừng ở dòng nào rồi báo agent. Pass → tester ghi playtest.result + merge main."
+next_action: "Chờ user chốt 3 điểm chuyển endless run (AI học heuristic? Queen hết hồi máu? end = defeat+scoreboard?) rồi sửa gói bug (slash range 130, bolt aim, phase 2 banner) + chuyển endless trong 1 lượt."
 
 # Evidence — việc ĐÃ xong trong session này, kèm bằng chứng (commit/file).
 # Không có bằng chứng = coi như chưa làm. (Ralph-handoff: evidence field)
