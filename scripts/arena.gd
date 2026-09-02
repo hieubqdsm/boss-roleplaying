@@ -77,6 +77,7 @@ func _push_web_state() -> void:
 		"hero_x": int(hero.position.x), "hero_dead": hero.dead,
 		"flasks": hero.flasks_left(), "debug_hitbox": GameSettings.debug_hitbox,
 		"skill_uses": queen.skill_uses.duplicate(),
+		"memory": hero.memory_dict(),
 	}
 	JavaScriptBridge.eval("window.__gameState = %s" % JSON.stringify(s))
 

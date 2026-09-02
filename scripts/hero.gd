@@ -83,6 +83,16 @@ func deaths_total() -> int:
 	return d
 
 
+## Bản ký ức cho web bridge / UI.
+func memory_dict() -> Dictionary:
+	return {
+		"deaths": int(_memory.get("deaths", 0)),
+		"by": _memory.get("by", {}).duplicate(),
+		"fights": int(_memory.get("fights", 0)),
+		"queen_kills": int(_memory.get("queen_kills", 0)),
+	}
+
+
 ## Tổng quan ký ức cho UI (màn kết thúc).
 func memory_summary() -> String:
 	return "Qua mọi ván: hero đã gục %d lần, từng hạ Queen %d lần" % [

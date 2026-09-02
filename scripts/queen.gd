@@ -121,7 +121,7 @@ func _try_slash() -> void:
 	if _cd_slash > 0.0:
 		return
 	_cd_slash = slash_cooldown
-	_slash_pending = 0.12
+	_slash_pending = 0.2
 	skill_uses["slash"] = int(skill_uses["slash"]) + 1
 	_anim_lock = 0.25
 	sprite.play("cast")
