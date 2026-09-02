@@ -30,14 +30,29 @@ func _ready() -> void:
 	top.add_theme_constant_override("separation", 24)
 	root.add_child(top)
 
-	# ── Phe Queen (trái) ──
-	var qside := VBoxContainer.new()
-	qside.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(qside)
-	qside.add_child(Style.label("THE DARK QUEEN", 10, Color("d9a441")))
-	queen_bar = Style.health_bar(380, Color("8f1d2c"))
-	queen_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	qside.add_child(queen_bar)
+	# ── Phe Hero (TRÁI — hero spawn bên trái) ──
+	var hside := VBoxContainer.new()
+	hside.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(hside)
+	var hname := Style.label("THE HERO", 10, Color("c8d4e0"))
+	hside.add_child(hname)
+	hero_bar = Style.health_bar(380, Color("3d6ea5"))
+	hero_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	hside.add_child(hero_bar)
+	# Stamina + estus của hero (đọc vị AI — thấy nó cạn sức/húp bình là biết nhịp đánh)
+	hero_stamina_bar = Style.health_bar(380, Color("3e8f6e"))
+	hero_stamina_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	hero_stamina_bar.custom_minimum_size = Vector2(380, 8)
+	hside.add_child(hero_stamina_bar)
+	var flask_row := HBoxContainer.new()
+	flask_row.add_theme_constant_override("separation", 4)
+	hside.add_child(flask_row)
+	for i in 3:
+		var pip := ColorRect.new()
+		pip.custom_minimum_size = Vector2(10, 14)
+		pip.color = Color("d9a441")
+		flask_row.add_child(pip)
+		flask_pips.append(pip)
 
 	# ── Counter hero gục (giữa) ──
 	var mid := VBoxContainer.new()
@@ -47,31 +62,16 @@ func _ready() -> void:
 	fallen_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mid.add_child(fallen_label)
 
-	# ── Phe Hero (phải) ──
-	var hside := VBoxContainer.new()
-	hside.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(hside)
-	var hname := Style.label("THE HERO", 10, Color("c8d4e0"))
-	hname.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	hside.add_child(hname)
-	hero_bar = Style.health_bar(380, Color("3d6ea5"))
-	hero_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
-	hside.add_child(hero_bar)
-	# Stamina + estus của hero (đọc vị AI — thấy nó cạn sức/húp bình là biết nhịp đánh)
-	hero_stamina_bar = Style.health_bar(380, Color("3e8f6e"))
-	hero_stamina_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
-	hero_stamina_bar.custom_minimum_size = Vector2(380, 8)
-	hside.add_child(hero_stamina_bar)
-	var flask_row := HBoxContainer.new()
-	flask_row.alignment = BoxContainer.ALIGNMENT_END
-	flask_row.add_theme_constant_override("separation", 4)
-	hside.add_child(flask_row)
-	for i in 3:
-		var pip := ColorRect.new()
-		pip.custom_minimum_size = Vector2(10, 14)
-		pip.color = Color("d9a441")
-		flask_row.add_child(pip)
-		flask_pips.append(pip)
+	# ── Phe Queen (PHẢI — Queen đứng bên phải) ──
+	var qside := VBoxContainer.new()
+	qside.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(qside)
+	var qname := Style.label("THE DARK QUEEN", 10, Color("d9a441"))
+	qname.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	qside.add_child(qname)
+	queen_bar = Style.health_bar(380, Color("8f1d2c"))
+	queen_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
+	qside.add_child(queen_bar)
 
 	# ── Cooldown 3 kỹ năng (góc dưới trái) ──
 	var cds := HBoxContainer.new()
