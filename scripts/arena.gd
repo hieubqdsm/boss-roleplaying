@@ -28,6 +28,7 @@ var fight_active := false
 var fight_time := 0.0
 var damage_dealt := 0
 var damage_taken := 0
+var _bridge_t := 0.0
 
 @onready var respawn_timer: Timer = $RespawnTimer
 @onready var end_timer: Timer = $EndTimer
@@ -59,6 +60,25 @@ func _process(delta: float) -> void:
 	fight_time += delta
 	hud.update_cooldowns(queen.cooldown_fractions())
 	hud.update_hero_stamina(hero.stamina_frac(), hero.flasks_left())
+	_bridge_t -= delta
+	if _bridge_t <= 0.0 and OS.has_feature("web"):
+		_bridge_t = 0.15
+		_push_web_state()
+
+
+## Web debug bridge — Playwright/tự động hoá đọc trạng thái qua window.__gameState.
+## Chỉ chạy trên bản web; desktop/headless không tốn chi phí gì.
+func _push_web_state() -> void:
+	var s := {
+		"round": round_idx, "fallen": heroes_fallen, "time": snappedf(fight_time, 0.1),
+		"queen_hp": queen.health.health, "queen_max": queen.health.max_health,
+		"queen_x": int(queen.position.x), "phase2": queen.phase2, "queen_dead": queen.dead,
+		"hero_hp": hero.health.health, "hero_max": hero.health.max_health,
+		"hero_x": int(hero.position.x), "hero_dead": hero.dead,
+		"flasks": hero.flasks_left(), "debug_hitbox": GameSettings.debug_hitbox,
+		"skill_uses": queen.skill_uses.duplicate(),
+	}
+	JavaScriptBridge.eval("window.__gameState = %s" % JSON.stringify(s))
 
 
 func _on_phase2() -> void:

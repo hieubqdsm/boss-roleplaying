@@ -19,3 +19,4 @@ mono_crash.*.json
 
 # Cấu hình máy local (path godot, node...) — agent ghi sau khi hỏi user
 docs/LOCAL.md
+build/

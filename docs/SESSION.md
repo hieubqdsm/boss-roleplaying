@@ -8,7 +8,7 @@ phase: dev                   # planned | dev | paused | done
 branch: feat/F-001-m0-vertical-slice
 handoff_kind: planned-next   # planned-next = làm tiếp luôn | pause = chờ người quyết
 current_focus: F-001         # id feature đang làm, hoặc "none"
-next_action: "Tester chơi lại F-001 (đã chuyển ENDLESS + AI hero học né đòn + fix slash/bolt/phase2 banner). Nếu lỗi → chép log [ARENA] cuối từ Output. Hài lòng → ghi playtest.result: pass rồi agent merge main."
+next_action: "Chờ tester playtest F-001 (desktop F5 hoặc web: python -m http.server 8091 trong build/web). Playwright tự chơi đã verify toàn vòng trên web (bot hạ 4 hero, end-game + legacy OK). Hài lòng → playtest.result: pass → agent merge main."
 
 # Evidence — việc ĐÃ xong trong session này, kèm bằng chứng (commit/file).
 # Không có bằng chứng = coi như chưa làm. (Ralph-handoff: evidence field)
