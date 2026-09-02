@@ -32,6 +32,9 @@ const COST_ATTACK := 28.0
 const COST_ROLL := 34.0
 const FLASKS_MAX := 3
 
+## Công tắc estus (user: tạm tắt 2026-09-02, GIỮ CODE — đổi true để bật lại).
+const ESTUS_ENABLED := false
+
 # Học né (giữ từ v2)
 const BASE_DODGE := {"bolt": 0.25, "nova": 0.5, "slash": 0.2}
 const DODGE_PER_DEATH := 0.12
@@ -123,8 +126,8 @@ func step(dist_x: float, cfg: Dictionary, state: Dictionary, delta: float,
 			return _keep(Action.ENGAGE, toward)
 
 		_: # PHASE_SPACING — não "người chơi": chờ cửa, né, húp máu
-			# 1) Sắp chết + an toàn → húp estus
-			if float(threats.get("hp_frac", 1.0)) < 0.35 and int(state["flasks"]) > 0 \
+			# 1) Sắp chết + an toàn → húp estus (tạm tắt qua ESTUS_ENABLED)
+			if ESTUS_ENABLED and float(threats.get("hp_frac", 1.0)) < 0.35 and int(state["flasks"]) > 0 \
 					and adist > 230.0 and not threats.get("bolt_near", false) \
 					and not threats.get("nova_windup", false):
 				return _enter(state, PHASE_SIP, Action.SIP, 0.0)

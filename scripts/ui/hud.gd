@@ -1,6 +1,7 @@
 class_name FightHUD
 extends CanvasLayer
 const Style := preload("res://scripts/ui/ui_style.gd")
+const BrainScript := preload("res://scripts/combat/hero_brain.gd")
 
 ## HUD trận đấu (endless): 2 thanh máu, counter hero đã gục, cooldown 3 kỹ năng,
 ## banner thông báo + banner phase 2.
@@ -46,6 +47,7 @@ func _ready() -> void:
 	hside.add_child(hero_stamina_bar)
 	var flask_row := HBoxContainer.new()
 	flask_row.add_theme_constant_override("separation", 4)
+	flask_row.visible = BrainScript.ESTUS_ENABLED   # estus tắt → ẩn hàng chấm
 	hside.add_child(flask_row)
 	for i in 3:
 		var pip := ColorRect.new()

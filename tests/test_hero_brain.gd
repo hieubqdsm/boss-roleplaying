@@ -107,6 +107,12 @@ func _test_stamina_cost() -> void:
 
 
 func _test_estus_sip() -> void:
+	if not BrainScript.ESTUS_ENABLED:
+		var brain := BrainScript.new()
+		var state := {}
+		var res := _tick(brain, state, 300.0, 2, {"hp_frac": 0.15})
+		_expect(int(res["action"]) != BrainScript.Action.SIP, "estus tắt → HP thấp cũng không húp")
+		return
 	var brain := BrainScript.new()
 	var state := {}
 	var threats := {"hp_frac": 0.2}
