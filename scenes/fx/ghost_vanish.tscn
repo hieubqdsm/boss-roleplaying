@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/fx/anim_self_free.gd" id="1_ghost"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/fx/fx_frames.tres" id="2_frames"]
+
+[node name="GhostVanish" type="AnimatedSprite2D"]
+script = ExtResource("1_ghost")
+scale = Vector2(2, 2)
+sprite_frames = ExtResource("2_frames")
+animation = &"ghost_vanish"
+autoplay_name = "ghost_vanish"

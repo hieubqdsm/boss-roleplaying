@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/queen.gd" id="1_queen"]
+[ext_resource type="SpriteFrames" path="res://assets/sprites/queen/queen_frames.tres" id="2_frames"]
+[ext_resource type="Script" path="res://scripts/combat/health.gd" id="3_health"]
+
+[node name="Queen" type="Node2D"]
+script = ExtResource("1_queen")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -56)
+scale = Vector2(2, 2)
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("3_health")
+max_health = 100

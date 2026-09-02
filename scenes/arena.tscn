@@ -1,0 +1,29 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/arena.gd" id="1_arena"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/old-dark-castle-interior-background.png" id="2_bg"]
+[ext_resource type="PackedScene" path="res://scenes/entities/queen.tscn" id="3_queen"]
+[ext_resource type="PackedScene" path="res://scenes/entities/hero.tscn" id="4_hero"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="6_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/end_screen.tscn" id="7_end"]
+
+[node name="Arena" type="Node2D"]
+script = ExtResource("1_arena")
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(576, 344)
+scale = Vector2(2, 2)
+texture = ExtResource("2_bg")
+
+[node name="Queen" parent="." instance=ExtResource("3_queen")]
+position = Vector2(940, 590)
+
+[node name="Hero" parent="." instance=ExtResource("4_hero")]
+position = Vector2(150, 590)
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]
+
+[node name="PauseUI" parent="." instance=ExtResource("6_pause")]
+
+[node name="EndUI" parent="." instance=ExtResource("7_end")]

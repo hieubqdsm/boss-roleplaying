@@ -1,0 +1,60 @@
+[gd_resource type="SpriteFrames" load_steps=15 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f0.png" id="tex_f0"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f1.png" id="tex_f1"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f2.png" id="tex_f2"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f3.png" id="tex_f3"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f4.png" id="tex_f4"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f5.png" id="tex_f5"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f6.png" id="tex_f6"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f7.png" id="tex_f7"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f12.png" id="tex_f12"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f13.png" id="tex_f13"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f14.png" id="tex_f14"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f15.png" id="tex_f15"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f16.png" id="tex_f16"]
+
+[resource]
+
+animations = [{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_f0")}, {"duration": 1.0, "texture": ExtResource("tex_f1")}],
+"loop": true,
+"name": &"idle",
+"speed": 3.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_f2")}, {"duration": 1.0, "texture": ExtResource("tex_f3")}, {"duration": 1.0, "texture": ExtResource("tex_f4")}, {"duration": 1.0, "texture": ExtResource("tex_f5")}],
+"loop": false,
+"name": &"cast",
+"speed": 9.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_f6")}, {"duration": 1.0, "texture": ExtResource("tex_f7")}, {"duration": 1.0, "texture": ExtResource("tex_f5")}],
+"loop": false,
+"name": &"nova",
+"speed": 7.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_f12")}, {"duration": 1.0, "texture": ExtResource("tex_f13")}],
+"loop": false,
+"name": &"hurt",
+"speed": 8.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_f14")}, {"duration": 1.0, "texture": ExtResource("tex_f15")}, {"duration": 1.0, "texture": ExtResource("tex_f16")}],
+"loop": false,
+"name": &"death",
+"speed": 4.0
+}]

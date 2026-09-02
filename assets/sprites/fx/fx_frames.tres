@@ -1,0 +1,68 @@
+[gd_resource type="SpriteFrames" load_steps=24 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f8.png" id="tex_f8"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f9.png" id="tex_f9"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f10.png" id="tex_f10"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/queen/f11.png" id="tex_f11"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/ghostv_0.png" id="tex_ghostv_0"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/ghostv_1.png" id="tex_ghostv_1"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/ghostv_2.png" id="tex_ghostv_2"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/ghostv_3.png" id="tex_ghostv_3"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/ghostv_4.png" id="tex_ghostv_4"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/ghostv_5.png" id="tex_ghostv_5"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/ghostv_6.png" id="tex_ghostv_6"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_0.png" id="tex_skull_0"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_1.png" id="tex_skull_1"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_2.png" id="tex_skull_2"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_3.png" id="tex_skull_3"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_4.png" id="tex_skull_4"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_5.png" id="tex_skull_5"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_6.png" id="tex_skull_6"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_7.png" id="tex_skull_7"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_8.png" id="tex_skull_8"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_9.png" id="tex_skull_9"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_10.png" id="tex_skull_10"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/skull_11.png" id="tex_skull_11"]
+
+[resource]
+
+animations = [{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_f8")}, {"duration": 1.0, "texture": ExtResource("tex_f9")}, {"duration": 1.0, "texture": ExtResource("tex_f10")}, {"duration": 1.0, "texture": ExtResource("tex_f11")}],
+"loop": true,
+"name": &"bolt",
+"speed": 10.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_ghostv_0")}, {"duration": 1.0, "texture": ExtResource("tex_ghostv_1")}, {"duration": 1.0, "texture": ExtResource("tex_ghostv_2")}, {"duration": 1.0, "texture": ExtResource("tex_ghostv_3")}, {"duration": 1.0, "texture": ExtResource("tex_ghostv_4")}, {"duration": 1.0, "texture": ExtResource("tex_ghostv_5")}, {"duration": 1.0, "texture": ExtResource("tex_ghostv_6")}],
+"loop": false,
+"name": &"ghost_vanish",
+"speed": 9.0
+},
+{
+"frames": [{"duration": 1.0, "texture": ExtResource("tex_skull_0")}, {"duration": 1.0, "texture": ExtResource("tex_skull_1")}, {"duration": 1.0, "texture": ExtResource("tex_skull_2")}, {"duration": 1.0, "texture": ExtResource("tex_skull_3")}, {"duration": 1.0, "texture": ExtResource("tex_skull_4")}, {"duration": 1.0, "texture": ExtResource("tex_skull_5")}, {"duration": 1.0, "texture": ExtResource("tex_skull_6")}, {"duration": 1.0, "texture": ExtResource("tex_skull_7")}, {"duration": 1.0, "texture": ExtResource("tex_skull_8")}, {"duration": 1.0, "texture": ExtResource("tex_skull_9")}, {"duration": 1.0, "texture": ExtResource("tex_skull_10")}, {"duration": 1.0, "texture": ExtResource("tex_skull_11")}],
+"loop": true,
+"name": &"skull",
+"speed": 10.0
+}]
