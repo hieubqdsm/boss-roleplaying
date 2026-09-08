@@ -109,3 +109,18 @@ Trả kết quả = MCP đã sống. Lỗi/không thấy tool = xem mục dướ
 
 - Repo: <https://github.com/Coding-Solo/godot-mcp>
 - npm: [`@coding-solo/godot-mcp`](https://www.npmjs.com/package/@coding-solo/godot-mcp)
+
+## Lỗi đã biết của fork @tugcantopaloglu/godot-mcp v3.1.0 (Windows)
+
+- **Path `res://` với file mới tạo ngoài editor**: nhiều tool (`add_node`, `read_scene`,
+  `update_project_uids`,…) check tồn tại file qua resource cache — file vừa tạo bằng
+  code/chưa qua `--import` sẽ bị báo "does not exist" dù có thật trên đĩa.
+  **Workaround**: (1) truyền `scenePath`/`filePath` dạng **tương đối không prefix
+  `res://`** (vd `scenes/ui/hud.tscn`), hoặc (2) chạy
+  `godot --headless --path . --import` để refresh cache trước khi gọi tool.
+- `update_project_uids` scan 0 file chính là cùng gốc lỗi này.
+- Đã verify chạy được: `create_scene`, `add_node` (với path tương đối),
+  `modify_scene_node`, `read_scene`, `manage_theme_resource`, `validate_scripts`.
+- Hệ quả tích cực: agent giờ **dựng UI trực tiếp vào .tscn qua MCP** được
+  (khắc phục điểm "UI code-built" trong review — node nằm thật trong scene,
+  mở editor thấy cây UI).
