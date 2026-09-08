@@ -210,12 +210,16 @@ func step(dist_x: float, cfg: BrainConfig, state: BrainState, delta: float,
 			if ESTUS_ENABLED and threats.hp_frac < 0.35 and state.flasks > 0 \
 					and adist > 230.0 and not threats.bolt_near and not threats.nova_windup:
 				return _enter(state, PHASE_SIP, Action.SIP, 0.0)
-			# 2) Né — lăn QUA đòn (về phía Queen) hoặc lùi xa nova
-			if threats.nova_windup and rng.randf() < dodge_chance(memory, "nova"):
+			# 2) Né — lăn QUA đòn (về phía Queen). Mọi cú lăn đều PHẢI đủ stamina
+			#    (user: "làm gì có luôn né được nếu hết stamina") — hết stamina là chịu trọn.
+			if threats.nova_windup and state.stamina >= COST_ROLL \
+					and rng.randf() < dodge_chance(memory, "nova"):
 				return _start_roll(state, -toward)
-			if threats.bolt_near and rng.randf() < dodge_chance(memory, "bolt"):
+			if threats.bolt_near and state.stamina >= COST_ROLL \
+					and rng.randf() < dodge_chance(memory, "bolt"):
 				return _start_roll(state, toward if rng.randf() < 0.5 else -toward)
 			if threats.slash_windup and adist < attack_range * 2.4 \
+					and state.stamina >= COST_ROLL \
 					and rng.randf() < dodge_chance(memory, "slash"):
 				return _start_roll(state, toward)
 			# 3) Punish: Queen vừa tung chiêu (đang hồi) + còn sức → xông vào
@@ -247,7 +251,7 @@ func _spacing_dir(state: BrainState, adist: float, preferred: float, toward: flo
 
 
 func _start_roll(state: BrainState, dir: float) -> StepResult:
-	state.stamina -= COST_ROLL
+	state.stamina = maxf(0.0, state.stamina - COST_ROLL)
 	state.roll_dir = dir
 	return _enter(state, PHASE_ROLL, Action.ROLL, dir)
 

@@ -16,6 +16,7 @@ func _init() -> void:
 	_test_stamina_cost()
 	_test_estus_sip()
 	_test_punish_on_recovery()
+	_test_panic_roll_requires_stamina()
 	print("")
 	if _fails == 0:
 		print("test_hero_brain: ALL PASS")
@@ -139,3 +140,32 @@ func _expect(cond: bool, what: String) -> void:
 	else:
 		_fails += 1
 		print("  FAIL: %s" % what)
+
+## ── Kiểm chứng feedback user: "làm gì có luôn né được nếu hết stamina" ──
+## Mọi cú lăn đều phải đủ COST_ROLL — hết stamina là chịu trọn đòn.
+func _test_panic_roll_requires_stamina() -> void:
+	var brain := BrainScript.new()
+	var state := BrainScript.BrainState.new()
+	state.stamina = 0.0
+	var memory := BrainScript.Memory.new()
+	for i in 10:
+		memory.count_death("slash")   # đã chết vì chém 10 lần → P(né) 0.85
+	var threats := BrainScript.Threats.new()
+	threats.slash_windup = true
+	var rolled := false
+	for i in 40:
+		var res := brain.step(113.0, _cfg(), state, 1.0 / 60.0, threats, memory)
+		if res.action == BrainScript.Action.ROLL:
+			rolled = true
+			break
+	_expect(not rolled, "hết stamina → KHÔNG roll (đúng thực tế)")
+	# đủ stamina → roll né xảy ra bình thường
+	state.stamina = 50.0
+	rolled = false
+	for i in 40:
+		var res := brain.step(113.0, _cfg(), state, 1.0 / 60.0, threats, memory)
+		if res.action == BrainScript.Action.ROLL:
+			rolled = true
+			break
+	_expect(rolled, "đủ stamina + telegraph → roll né bình thường")
+	_expect(state.stamina >= 0.0, "stamina không bao giờ âm")
