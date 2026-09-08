@@ -4,3 +4,192 @@
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBar" type="HBoxContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = -24.0
+grow_horizontal = 2
+theme_override_constants/separation = 24
+
+[node name="HeroSide" type="VBoxContainer" parent="Root/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="HeroName" type="Label" parent="Root/TopBar/HeroSide"]
+layout_mode = 2
+text = "THE HERO"
+
+[node name="HeroHealth" type="ProgressBar" parent="Root/TopBar/HeroSide"]
+custom_minimum_size = Vector2(380, 16)
+layout_mode = 2
+size_flags_horizontal = 0
+max_value = 55.0
+value = 55.0
+show_percentage = false
+
+[node name="HeroStamina" type="ProgressBar" parent="Root/TopBar/HeroSide"]
+custom_minimum_size = Vector2(380, 8)
+layout_mode = 2
+size_flags_horizontal = 0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="HeroFlasks" type="HBoxContainer" parent="Root/TopBar/HeroSide"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Flask1" type="ColorRect" parent="Root/TopBar/HeroSide/HeroFlasks"]
+custom_minimum_size = Vector2(10, 14)
+layout_mode = 2
+color = Color(0.851, 0.643, 0.255, 1)
+
+[node name="Flask2" type="ColorRect" parent="Root/TopBar/HeroSide/HeroFlasks"]
+custom_minimum_size = Vector2(10, 14)
+layout_mode = 2
+color = Color(0.851, 0.643, 0.255, 1)
+
+[node name="Flask3" type="ColorRect" parent="Root/TopBar/HeroSide/HeroFlasks"]
+custom_minimum_size = Vector2(10, 14)
+layout_mode = 2
+color = Color(0.851, 0.643, 0.255, 1)
+
+[node name="CenterSide" type="VBoxContainer" parent="Root/TopBar"]
+layout_mode = 2
+alignment = 1
+
+[node name="FallenLabel" type="Label" parent="Root/TopBar/CenterSide"]
+layout_mode = 2
+text = "FALLEN 0"
+horizontal_alignment = 1
+
+[node name="QueenSide" type="VBoxContainer" parent="Root/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="QueenName" type="Label" parent="Root/TopBar/QueenSide"]
+layout_mode = 2
+text = "THE DARK QUEEN"
+horizontal_alignment = 2
+
+[node name="QueenHealth" type="ProgressBar" parent="Root/TopBar/QueenSide"]
+custom_minimum_size = Vector2(380, 16)
+layout_mode = 2
+size_flags_horizontal = 8
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="SkillBar" type="HBoxContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -92.0
+offset_bottom = -20.0
+grow_vertical = 0
+theme_override_constants/separation = 10
+
+[node name="SlashSlot" type="VBoxContainer" parent="Root/SkillBar"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="SlashKey" type="Label" parent="Root/SkillBar/SlashSlot"]
+layout_mode = 2
+text = "SLASH  J"
+
+[node name="SlashFill" type="ColorRect" parent="Root/SkillBar/SlashSlot"]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+color = Color(0.14, 0.1, 0.16, 0.92)
+
+[node name="Veil" type="ColorRect" parent="Root/SkillBar/SlashSlot/SlashFill"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="BoltSlot" type="VBoxContainer" parent="Root/SkillBar"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="BoltKey" type="Label" parent="Root/SkillBar/BoltSlot"]
+layout_mode = 2
+text = "BOLT   K"
+
+[node name="BoltFill" type="ColorRect" parent="Root/SkillBar/BoltSlot"]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+color = Color(0.14, 0.1, 0.16, 0.92)
+
+[node name="Veil" type="ColorRect" parent="Root/SkillBar/BoltSlot/BoltFill"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="NovaSlot" type="VBoxContainer" parent="Root/SkillBar"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="NovaKey" type="Label" parent="Root/SkillBar/NovaSlot"]
+layout_mode = 2
+text = "NOVA   L"
+
+[node name="NovaFill" type="ColorRect" parent="Root/SkillBar/NovaSlot"]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+color = Color(0.14, 0.1, 0.16, 0.92)
+
+[node name="Veil" type="ColorRect" parent="Root/SkillBar/NovaSlot/NovaFill"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="Banner" type="Label" parent="Root"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -20.0
+offset_right = 260.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(260, 20)
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+modulate = Color(1, 1, 1, 0)

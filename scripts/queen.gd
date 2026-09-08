@@ -10,6 +10,7 @@ const NovaScene := preload("res://scenes/fx/nova.tscn")
 const ArcScene := preload("res://scenes/fx/slash_arc.tscn")
 const HealthScript := preload("res://scripts/combat/health.gd")
 const DebugDrawScript := preload("res://scripts/fx/debug_draw.gd")
+const Anchors := preload("res://scripts/combat/combat_anchors.gd")
 
 signal damage_dealt(amount: int)
 signal damage_taken(amount: int)
@@ -42,6 +43,14 @@ var _nova_pending := 0.0
 var _anim_lock := 0.0
 var _target: Node2D
 var _skill_recovery := 0.0  # > 0 = đang hồi sau chiêu → hero punish được
+
+# ── Hằng số vị trí/khoảng của Queen (trước đây rải rác trong hàm — review 2026-09-02) ──
+const MUZZLE_OFFSET := Vector2(52.0, -60.0)     # điểm bắn bolt
+const NOVA_CENTER := Vector2(0, -60.0)          # tâm vòng nova
+const NOVA_FX_OFFSET := Vector2(0, -84.0)       # vị trí vẽ vòng nova
+const SKULL_SPAWN := Vector2(0, -170.0)         # điểm triều hồi skull (phase 2)
+const SPRITE_Y := -84.0                         # độ cao lơ lửng của sprite
+const HURT_IFRAMES := 0.35                      # chớp bất tử khi trúng đòn
 ## Số lần người chơi tung từng kỹ năng trong ván — hero "đọc" thói quen qua đây.
 var skill_uses := {"slash": 0, "bolt": 0, "nova": 0}
 
@@ -102,7 +111,7 @@ func _update_facing() -> void:
 func _move(delta: float) -> void:
 	var dir := Input.get_axis("move_left", "move_right")
 	var speed := move_speed * (1.15 if phase2 else 1.0)
-	_knock_x = move_toward(_knock_x, 0.0, 900.0 * delta)
+	_knock_x = move_toward(_knock_x, 0.0, Anchors.HERO_KNOCK_DECAY * delta)
 	position.x += dir * speed * delta + _knock_x * delta
 	position.x = clampf(position.x, _bounds.x, _bounds.y)
 	position.y = _ground_y
@@ -135,10 +144,10 @@ func _try_bolt() -> void:
 	_cd_bolt = bolt_cooldown
 	skill_uses["bolt"] = int(skill_uses["bolt"]) + 1
 	_anim_lock = 0.3
-	_skill_recovery = 0.35
+	_skill_recovery = Anchors.BOLT_RECOVERY
 	sprite.play("cast")
 	GameAudio.play_sfx("bolt_cast")
-	var muzzle := global_position + Vector2(52.0 * facing, -60.0)
+	var muzzle := global_position + Vector2(MUZZLE_OFFSET.x * facing, MUZZLE_OFFSET.y)
 	if phase2:
 		_spawn_bolt(muzzle, Vector2(facing, -0.14).normalized())
 		_spawn_bolt(muzzle, Vector2(facing, 0.14).normalized())
@@ -169,7 +178,7 @@ func _pending_hits(delta: float) -> void:
 	if _slash_pending > 0.0:
 		_slash_pending -= delta
 		if _slash_pending <= 0.0:
-			_skill_recovery = 0.55
+			_skill_recovery = Anchors.SLASH_RECOVERY
 			# vết chém sprite đặt giữa thân và mép tầm chém
 			var arc := ArcScene.instantiate()
 			get_parent().add_child(arc)
@@ -178,7 +187,7 @@ func _pending_hits(delta: float) -> void:
 			if is_instance_valid(_target) and not _target.is_dead():
 				var dx := (_target.global_position.x - global_position.x) * facing
 				if dx > -20.0 and dx < slash_range:
-					_hit_target(slash_damage, 220.0, "slash")
+					_hit_target(slash_damage, Anchors.SLASH_KNOCK, "slash")
 	if _nova_pending > 0.0:
 		_nova_pending -= delta
 		if _nova_pending <= 0.0:
@@ -187,21 +196,21 @@ func _pending_hits(delta: float) -> void:
 
 func _fire_nova() -> void:
 	var radius := nova_radius * (1.25 if phase2 else 1.0)
-	_skill_recovery = 0.6
+	_skill_recovery = Anchors.NOVA_RECOVERY
 	GameAudio.play_sfx("nova")
 	var fx := NovaScene.instantiate()
 	get_parent().add_child(fx)
-	fx.global_position = global_position + Vector2(0, -84)
+	fx.global_position = global_position + NOVA_FX_OFFSET
 	fx.launch(radius)
 	if is_instance_valid(_target) and not _target.is_dead():
-		var dist := _target.global_position.distance_to(global_position + Vector2(0, -60))
+		var dist := _target.global_position.distance_to(global_position + NOVA_CENTER)
 		if dist <= radius:
-			_hit_target(nova_damage, 520.0, "nova")
+			_hit_target(nova_damage, Anchors.NOVA_KNOCK, "nova")
 	if phase2 and is_instance_valid(_target) and not _target.is_dead():
 		var skull := BoltScene.instantiate()
 		get_parent().add_child(skull)
 		skull.setup_skull(
-			global_position + Vector2(0, -170), bolt_speed * 0.45, 12, _target
+			global_position + SKULL_SPAWN, bolt_speed * 0.45, 12, _target
 		)
 
 
@@ -234,14 +243,14 @@ func _hit_target(dmg: int, knockback: float, cause := "slash") -> void:
 	damage_dealt.emit(dmg)
 	var spark := SlashFXScene.instantiate()
 	get_parent().add_child(spark)
-	spark.global_position = _target.global_position + Vector2(0, -44)
+	spark.global_position = _target.hit_center()
 
 
 ## Hero chém trúng Queen.
 func apply_hero_hit(dmg: int, from_x: float) -> void:
 	if dead or _invuln > 0.0:
 		return
-	_invuln = 0.35
+	_invuln = HURT_IFRAMES
 	_knock_x = 320.0 * (1 if global_position.x >= from_x else -1)
 	health.take_damage(dmg)
 	damage_taken.emit(dmg)
@@ -278,7 +287,7 @@ func _debug_shapes() -> Array:
 		{"type": "rect", "pos": Vector2(-34, -160), "size": Vector2(68, 160), "color": body_col},
 		{"type": "line", "from": Vector2(slash_range * facing, -150), "to": Vector2(slash_range * facing, 30),
 			"color": Color(1.0, 0.85, 0.3, 0.8)},
-		{"type": "arc", "pos": Vector2(0, -60), "radius": get_nova_radius(),
+		{"type": "arc", "pos": NOVA_CENTER, "radius": get_nova_radius(),
 			"color": Color(0.7, 0.4, 1.0, 0.6), "points": 48},
 	]
 	if is_instance_valid(_target) and not _target.is_dead():

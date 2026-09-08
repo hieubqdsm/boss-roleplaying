@@ -26,6 +26,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS  # F9 toggle được cả khi game pause
 	load_settings()
 	apply_settings()
 

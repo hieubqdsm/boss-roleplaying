@@ -2,13 +2,18 @@ class_name Hero
 extends Node2D
 
 ## Hero — AI đánh như NGƯỜI CHƠI Dark Souls (không phải boss):
-## spacing + stamina, lăn né i-frames, punish khi Queen hồi chiêu,
-## húp estus khi gần chết. Não: HeroBrain. Ký ức học đòn sống qua các lần chết.
+## spacing + stamina, lăn né i-frames, punish khi Queen hồi chiêu, estus
+## (tạm tắt — xem HeroBrain.ESTUS_ENABLED). Não: HeroBrain (typed classes).
+## Ký ức học đòn sống qua các lần chết VÀ các ván (user://hero_memory.cfg).
+##
+## Ghi chú: `target` giữ kiểu Node2D + unsafe method calls CỐ Ý — preload
+## chéo Queen↔Hero sẽ tạo dependency cycle (docs/CODING.md §2).
 
 const GhostFXScene := preload("res://scenes/fx/ghost_vanish.tscn")
 const SparkFXScene := preload("res://scenes/fx/hit_spark.tscn")
 const HealthScript := preload("res://scripts/combat/health.gd")
 const BrainScript := preload("res://scripts/combat/hero_brain.gd")
+const Anchors := preload("res://scripts/combat/combat_anchors.gd")
 const DebugDrawScript := preload("res://scripts/fx/debug_draw.gd")
 
 const MEMORY_PATH := "user://hero_memory.cfg"
@@ -24,98 +29,20 @@ signal damage_taken(amount: int)
 @export var windup_time := 0.08
 @export var strike_time := 0.22
 @export var recover_time := 0.35
+## Tâm vùng trúng đạn so với chân (single source: bolt/queen/debug đọc qua hit_center()).
+@export var chest_anchor := Anchors.HERO_CHEST
 
 var health: HealthScript
 var brain := BrainScript.new()
-var brain_state := {}
+var brain_state := BrainScript.BrainState.new()
+var _cfg := BrainScript.BrainConfig.default()
 var target: Node2D
 var invuln := 0.0
 var dead := false
 var round_idx := 1
 
-## Ký ức học đòn — sống qua các lần chết VÀ qua các ván chơi (Mortholme style:
-## hero nhớ bạn giữa các session). Lưu user://hero_memory.cfg.
-var _memory := {"deaths": 0, "by": {}, "fights": 0, "queen_kills": 0, "usage": {}}
-
-
-func load_memory() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load(MEMORY_PATH) != OK:
-		return
-	_memory = {
-		"deaths": int(cfg.get_value("hero", "deaths", 0)),
-		"by": cfg.get_value("hero", "by", {}),
-		"fights": int(cfg.get_value("hero", "fights", 0)),
-		"queen_kills": int(cfg.get_value("hero", "queen_kills", 0)),
-		"usage": cfg.get_value("hero", "usage", {}),
-	}
-	print("[HERO] ký ức qua các ván: chết %d lần (%s), đã đánh %d ván, từng hạ Queen %d lần" % [
-		_memory["deaths"], str(_memory["by"]), _memory["fights"], _memory["queen_kills"]
-	])
-
-
-func save_memory(usage_this_fight: Dictionary, queen_died: bool) -> void:
-	_memory["fights"] = int(_memory.get("fights", 0)) + 1
-	if queen_died:
-		_memory["queen_kills"] = int(_memory.get("queen_kills", 0)) + 1
-	var u: Dictionary = _memory.get("usage", {})
-	for k in usage_this_fight:
-		u[k] = int(u.get(k, 0)) + int(usage_this_fight[k])
-	_memory["usage"] = u
-	_persist_memory()
-
-
-func _persist_memory() -> void:
-	var cfg := ConfigFile.new()
-	cfg.set_value("hero", "deaths", int(_memory.get("deaths", 0)))
-	cfg.set_value("hero", "by", _memory.get("by", {}))
-	cfg.set_value("hero", "fights", int(_memory.get("fights", 0)))
-	cfg.set_value("hero", "queen_kills", int(_memory.get("queen_kills", 0)))
-	cfg.set_value("hero", "usage", _memory.get("usage", {}))
-	cfg.save(MEMORY_PATH)
-
-
-## Tổng số lần hero đã chết bởi đòn của người chơi (mọi ván).
-func deaths_total() -> int:
-	var d := 0
-	for k in ["slash", "bolt", "nova", "skull"]:
-		d += int(_memory.get("by", {}).get(k, 0))
-	return d
-
-
-## Bản ký ức cho web bridge / UI.
-func memory_dict() -> Dictionary:
-	return {
-		"deaths": int(_memory.get("deaths", 0)),
-		"by": _memory.get("by", {}).duplicate(),
-		"fights": int(_memory.get("fights", 0)),
-		"queen_kills": int(_memory.get("queen_kills", 0)),
-	}
-
-
-## Tổng quan ký ức cho UI (màn kết thúc).
-func memory_summary() -> String:
-	return "Qua mọi ván: hero đã gục %d lần, từng hạ Queen %d lần" % [
-		int(_memory.get("deaths", 0)), int(_memory.get("queen_kills", 0))
-	]
-
-
-## Thế đánh áp theo THÓI QUEN của người chơi (đếm số lần bạn dùng từng kỹ năng,
-## KHÔNG đọc phím — đọc từ ký ức usage đã lưu).
-func _stance_cfg() -> Dictionary:
-	var u: Dictionary = _memory.get("usage", {})
-	var total := int(u.get("slash", 0)) + int(u.get("bolt", 0)) + int(u.get("nova", 0))
-	if total < 10:
-		return {"preferred_range": attack_range + 55.0, "poke_rate": 0.02}
-	var bolt_share := float(int(u.get("bolt", 0))) / float(total)
-	var slash_share := float(int(u.get("slash", 0))) / float(total)
-	if bolt_share > 0.5:
-		# Bạn là dạng pháo thủ → hero bám sát, poke liên tục
-		return {"preferred_range": attack_range + 20.0, "poke_rate": 0.035}
-	if slash_share > 0.6:
-		# Bạn chỉ biết chém → hero giữ xa, thả diều
-		return {"preferred_range": attack_range + 95.0, "poke_rate": 0.012}
-	return {"preferred_range": attack_range + 55.0, "poke_rate": 0.02}
+## Ký ức học đòn — sống qua các lần chết VÀ qua các ván chơi (Mortholme style).
+var memory := BrainScript.Memory.new()
 
 var _knock_x := 0.0
 var _damage := 7
@@ -140,20 +67,22 @@ var _dbg: DebugDraw
 
 func setup_round(round: int) -> void:
 	round_idx = round
-	brain_state = {}
+	# Seed runtime: mỗi round một vận may riêng (test giữ seed 12345 deterministic).
+	brain_state = BrainScript.BrainState.new(randi())
+	_cfg = BrainScript.BrainConfig.default()
 	dead = false
 	invuln = 0.9
 	_respawn_flash = 0.9
 	_knock_x = 0.0
 	_last_action = -1
-	var d := int(_memory.get("deaths", 0))
+	var d := memory.deaths
 	_damage = base_damage + mini(6, d)
 	_speed = base_speed + minf(30.0, 2.0 * d)
 	_stagger = maxf(0.16, base_stagger - 0.015 * d)
 	health.reset_to(base_health)
 	modulate = Color.WHITE
 	sprite.play("idle")
-	print("[HERO] sống dậy lần thứ %d — đã học: %s" % [round, str(_memory.get("by", {}))])
+	print("[HERO] sống dậy lần thứ %d — đã học: %s" % [round, str(memory.by)])
 
 
 func _physics_process(delta: float) -> void:
@@ -171,54 +100,66 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var dist_x := target.global_position.x - global_position.x
-	var stance := _stance_cfg()
-	var cfg := {
-		"attack_range": attack_range,
-		"preferred_range": float(stance["preferred_range"]),
-		"poke_rate": float(stance["poke_rate"]),
-		"windup_time": maxf(0.05, windup_time - 0.004 * int(_memory.get("deaths", 0))),
-		"strike_time": strike_time,
-		"recover_time": recover_time,
-		"stagger_time": _stagger,
-		"roll_time": 0.4,
-		"sip_time": 1.2,
-	}
-	var res := brain.step(dist_x, cfg, brain_state, delta, _threats(), _memory)
+	_cfg.preferred_range = float(stance.preferred_range)
+	_cfg.poke_rate = float(stance.poke_rate)
+	_cfg.windup_time = maxf(0.05, windup_time - 0.004 * memory.deaths)
+	_cfg.attack_range = attack_range
+	_cfg.strike_time = strike_time
+	_cfg.recover_time = recover_time
+	_cfg.stagger_time = _stagger
+	var res := brain.step(dist_x, _cfg, brain_state, delta, _threats(), memory)
 	_apply_action(res, dist_x, delta)
-	_last_action = int(res["action"])
+	_last_action = res.action
 	_dbg.visible = GameSettings.debug_hitbox
 	if GameSettings.debug_hitbox:
 		_dbg.shapes = _debug_shapes()
 
-func _threats() -> Dictionary:
-	var th := {
-		"nova_windup": false, "bolt_near": false, "slash_windup": false,
-		"queen_recovery": false, "hp_frac": float(health.health) / float(health.max_health),
-	}
+
+## Thế đánh áp theo THÓI QUEN của người chơi (từ ký ức usage, không đọc phím).
+var stance := {"preferred_range": attack_range + 55.0, "poke_rate": 0.02}
+
+
+func _refresh_stance() -> void:
+	var u: Dictionary = memory.usage
+	var total := int(u.get("slash", 0)) + int(u.get("bolt", 0)) + int(u.get("nova", 0))
+	if total < 10:
+		stance = {"preferred_range": attack_range + 55.0, "poke_rate": 0.02}
+	elif float(int(u.get("bolt", 0))) / float(total) > 0.5:
+		stance = {"preferred_range": attack_range + 20.0, "poke_rate": 0.035}   # pháo thủ → bám sát
+	elif float(int(u.get("slash", 0))) / float(total) > 0.6:
+		stance = {"preferred_range": attack_range + 95.0, "poke_rate": 0.012}   # chém thủ → thả diều
+	else:
+		stance = {"preferred_range": attack_range + 55.0, "poke_rate": 0.02}
+
+
+## Quét mối đe doạ xung quanh: telegraph của Queen + đạn đang bay tới gần.
+func _threats() -> BrainScript.Threats:
+	var th := BrainScript.Threats.new()
+	th.hp_frac = float(health.health) / float(health.max_health)
 	if is_instance_valid(target) and not target.is_dead() and target.has_method("is_charging_nova"):
 		if target.is_charging_nova():
 			var r: float = target.get_nova_radius()
-			th["nova_windup"] = global_position.distance_to(target.global_position) < r * 1.15
-		th["slash_windup"] = target.is_charging_slash()
-		th["queen_recovery"] = target.is_recovering()
+			th.nova_windup = global_position.distance_to(target.global_position) < r * 1.15
+		th.slash_windup = target.is_charging_slash()
+		th.queen_recovery = target.is_recovering()
 	for b in get_tree().get_nodes_in_group("queen_bolts"):
 		if is_instance_valid(b) and absf(b.global_position.x - global_position.x) < 240.0:
-			th["bolt_near"] = true
+			th.bolt_near = true
 			break
 	return th
 
 
-func _apply_action(res: Dictionary, dist_x: float, delta: float) -> void:
-	var action := int(res["action"])
+func _apply_action(res: BrainScript.StepResult, dist_x: float, delta: float) -> void:
+	var action := res.action
 	# Báo log khi đổi trạng thái "đặc biệt"
 	if action != _last_action:
 		match action:
 			BrainScript.Action.ROLL:
-				invuln = maxf(invuln, 0.38)  # i-frame của cú lăn
+				invuln = maxf(invuln, BrainScript.ROLL_IFRAMES)  # i-frame của cú lăn
 			BrainScript.Action.ENGAGE:
 				print("[HERO] lao vào tấn công")
 			BrainScript.Action.SIP:
-				print("[HERO] lùi ra húp estus (còn %d)" % int(brain_state.get("flasks", 0)))
+				print("[HERO] lùi ra húp estus (còn %d)" % brain_state.flasks)
 			BrainScript.Action.HEAL_APPLY:
 				health.heal(health.max_health)
 				GameAudio.play_sfx("round_start")
@@ -232,8 +173,8 @@ func _apply_action(res: Dictionary, dist_x: float, delta: float) -> void:
 			speed_scale = 1.3
 		BrainScript.Action.ENGAGE:
 			speed_scale = 1.45
-	var move := float(res["move_dir"]) * _speed * speed_scale
-	_knock_x = move_toward(_knock_x, 0.0, 900.0 * delta)
+	var move := res.move_dir * _speed * speed_scale
+	_knock_x = move_toward(_knock_x, 0.0, Anchors.HERO_KNOCK_DECAY * delta)
 	position.x += (move + _knock_x) * delta
 	sprite.flip_h = dist_x < 0.0
 
@@ -270,29 +211,27 @@ func is_dead() -> bool:
 	return dead
 
 
-## Cho HUD đọc: stamina 0..1 và số bình estus còn.
-func stamina_frac() -> float:
-	return float(brain_state.get("stamina", 100.0)) / float(BrainScript.STAMINA_MAX)
+## Tâm vùng trúng đạn (đạn/phép của Queen nhắm đây; debug vẽ đây).
+func hit_center() -> Vector2:
+	return global_position + chest_anchor
 
 
-func flasks_left() -> int:
-	return int(brain_state.get("flasks", BrainScript.FLASKS_MAX))
-
-
-## Debug: ĐỎ = hitbox thân (đạn/phép của Queen trúng đây) / XANH LÁ = bất tử
-## (i-frame lăn, mới hồi sinh). VÀNG = tầm chém của hero.
+## Debug: ĐỎ = hitbox thân / XANH LÁ = bất tử (i-frame lăn, mới hồi sinh).
+## VÀNG = tầm chém của hero.
 func _debug_shapes() -> Array:
 	var dodging := invuln > 0.0 or brain.is_rolling(brain_state)
 	var col := Color(0.25, 1.0, 0.45, 0.9) if dodging else Color(1.0, 0.3, 0.3, 0.85)
 	var shapes := [
-		{"type": "arc", "pos": Vector2(0, -44), "radius": 26.0, "color": col, "points": 24},
-		{"type": "dot", "pos": Vector2(0, -44), "radius": 2.0, "color": col},
+		{"type": "arc", "pos": chest_anchor, "radius": Anchors.HERO_HIT_RADIUS, "color": col, "points": 24},
+		{"type": "dot", "pos": chest_anchor, "radius": 2.0, "color": col},
 	]
 	var dir := 1.0
 	if is_instance_valid(target):
 		dir = signf(target.global_position.x - global_position.x)
-	shapes.append({"type": "line", "from": Vector2(dir * attack_range * 1.35, -110),
-		"to": Vector2(dir * attack_range * 1.35, 20), "color": Color(1.0, 0.85, 0.3, 0.8)})
+	shapes.append({"type": "line",
+		"from": Vector2(dir * attack_range * Anchors.HERO_STRIKE_RANGE_MULT, -110),
+		"to": Vector2(dir * attack_range * Anchors.HERO_STRIKE_RANGE_MULT, 20),
+		"color": Color(1.0, 0.85, 0.3, 0.8)})
 	return shapes
 
 
@@ -300,12 +239,12 @@ func _strike_hit() -> void:
 	if not is_instance_valid(target) or target.is_dead():
 		return
 	var dx := absf(target.global_position.x - global_position.x)
-	if dx <= attack_range * 1.35:
+	if dx <= attack_range * Anchors.HERO_STRIKE_RANGE_MULT:
 		target.apply_hero_hit(_damage, global_position.x)
 
 
 ## Queen đánh trúng hero. cause: "slash" | "bolt" | "nova" | "skull".
-func take_hit(dmg: int, from_x: float, knockback_x := 240.0, cause := "slash") -> void:
+func take_hit(dmg: int, from_x: float, knockback_x := Anchors.DEFAULT_KNOCK, cause := "slash") -> void:
 	if dead or invuln > 0.0:
 		return
 	cause_last = cause
@@ -314,7 +253,7 @@ func take_hit(dmg: int, from_x: float, knockback_x := 240.0, cause := "slash") -
 	GameAudio.play_sfx("hit_hero")
 	var spark := SparkFXScene.instantiate()
 	get_parent().add_child(spark)
-	spark.global_position = global_position + Vector2(0, -44)
+	spark.global_position = hit_center()
 	if not dead:
 		brain.on_damaged(brain_state)  # mất thế — ngắt cả húp máu
 		_knock_x = knockback_x
@@ -323,12 +262,9 @@ func take_hit(dmg: int, from_x: float, knockback_x := 240.0, cause := "slash") -
 
 func _on_died() -> void:
 	dead = true
-	_memory["deaths"] = int(_memory.get("deaths", 0)) + 1
-	var by: Dictionary = _memory.get("by", {})
-	by[cause_last] = int(by.get(cause_last, 0)) + 1
-	_memory["by"] = by
+	memory.count_death(cause_last)
 	_persist_memory()  # chết là ghi sổ ngay — đóng game giữa chừng vẫn nhớ
-	print("[HERO] gục ở round %d — chết vì '%s' (tổng chết: %d)" % [round_idx, cause_last, _memory["deaths"]])
+	print("[HERO] gục ở round %d — chết vì '%s' (tổng chết: %d)" % [round_idx, cause_last, memory.deaths])
 	GameAudio.play_sfx("hero_die")
 	sprite.play("hurt")
 	var ghost := GhostFXScene.instantiate()
@@ -342,3 +278,73 @@ func _on_died() -> void:
 
 ## Loại đòn cuối cùng trúng — để ghi vào ký ức khi chết.
 var cause_last := "slash"
+
+
+# ── Ký ức qua các ván (Mortholme: hero nhớ bạn giữa các session) ──
+
+func load_memory() -> void:
+	_refresh_stance()
+	var cfg := ConfigFile.new()
+	if cfg.load(MEMORY_PATH) != OK:
+		return
+	memory.deaths = int(cfg.get_value("hero", "deaths", 0))
+	memory.by = cfg.get_value("hero", "by", {})
+	memory.fights = int(cfg.get_value("hero", "fights", 0))
+	memory.queen_kills = int(cfg.get_value("hero", "queen_kills", 0))
+	memory.usage = cfg.get_value("hero", "usage", {})
+	_refresh_stance()
+	print("[HERO] ký ức qua các ván: chết %d lần (%s), đã đánh %d ván, từng hạ Queen %d lần" % [
+		memory.deaths, str(memory.by), memory.fights, memory.queen_kills
+	])
+
+
+func save_memory(usage_this_fight: Dictionary, queen_died: bool) -> void:
+	memory.fights += 1
+	if queen_died:
+		memory.queen_kills += 1
+	memory.add_usage(usage_this_fight)
+	_persist_memory()
+
+
+func _persist_memory() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("hero", "deaths", memory.deaths)
+	cfg.set_value("hero", "by", memory.by)
+	cfg.set_value("hero", "fights", memory.fights)
+	cfg.set_value("hero", "queen_kills", memory.queen_kills)
+	cfg.set_value("hero", "usage", memory.usage)
+	cfg.save(MEMORY_PATH)
+
+
+## Tổng số lần hero đã chết bởi đòn của người chơi (mọi ván).
+func deaths_total() -> int:
+	var d := 0
+	for k in BrainScript.DAMAGE_KINDS:
+		d += memory.deaths_by(k)
+	return d
+
+
+## Bản ký ức cho web bridge / UI.
+func memory_dict() -> Dictionary:
+	return {
+		"deaths": memory.deaths,
+		"by": memory.by.duplicate(),
+		"fights": memory.fights,
+		"queen_kills": memory.queen_kills,
+	}
+
+
+## Tổng quan ký ức cho UI (màn kết thúc).
+func memory_summary() -> String:
+	return "Qua mọi ván: hero đã gục %d lần, từng hạ Queen %d lần" % [
+		memory.deaths, memory.queen_kills
+	]
+
+
+## Cho HUD đọc: stamina 0..1 và số bình estus còn.
+func stamina_frac() -> float:
+	return brain_state.stamina / BrainScript.STAMINA_MAX
+
+
+func flasks_left() -> int:
+	return brain_state.flasks

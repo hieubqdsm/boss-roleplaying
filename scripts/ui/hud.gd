@@ -3,116 +3,58 @@ extends CanvasLayer
 const Style := preload("res://scripts/ui/ui_style.gd")
 const BrainScript := preload("res://scripts/combat/hero_brain.gd")
 
-## HUD trận đấu (endless): 2 thanh máu, counter hero đã gục, cooldown 3 kỹ năng,
-## banner thông báo + banner phase 2.
+## HUD trận đấu (endless). CẤU TRÚC NODE KHAI TĨNH trong hud.tscn
+## (review 2026-09-02: hết UI code-built — mở editor thấy cây ngay);
+## script này chỉ WIring dữ liệu + style đồng bộ qua UIStyle.
 
-var queen_bar: ProgressBar
-var hero_bar: ProgressBar
-var hero_stamina_bar: ProgressBar
-var flask_pips: Array[ColorRect] = []
-var fallen_label: Label
-var banner: Label
-var cd_slash: ColorRect
-var cd_bolt: ColorRect
-var cd_nova: ColorRect
+@onready var queen_bar: ProgressBar = $Root/TopBar/QueenSide/QueenHealth
+@onready var hero_bar: ProgressBar = $Root/TopBar/HeroSide/HeroHealth
+@onready var hero_stamina_bar: ProgressBar = $Root/TopBar/HeroSide/HeroStamina
+@onready var fallen_label: Label = $Root/TopBar/CenterSide/FallenLabel
+@onready var banner: Label = $Root/Banner
+@onready var cd_slash: ColorRect = $Root/SkillBar/SlashSlot/SlashFill/Veil
+@onready var cd_bolt: ColorRect = $Root/SkillBar/BoltSlot/BoltFill/Veil
+@onready var cd_nova: ColorRect = $Root/SkillBar/NovaSlot/NovaFill/Veil
+@onready var _flask_row: HBoxContainer = $Root/TopBar/HeroSide/HeroFlasks
+@onready var _flask_pips: Array[ColorRect] = [
+	$Root/TopBar/HeroSide/HeroFlasks/Flask1,
+	$Root/TopBar/HeroSide/HeroFlasks/Flask2,
+	$Root/TopBar/HeroSide/HeroFlasks/Flask3,
+]
 
 
 func _ready() -> void:
-	var root := Control.new()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(root)
-
-	var top := HBoxContainer.new()
-	top.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	top.offset_left = 24
-	top.offset_right = -24
-	top.offset_top = 18
-	top.add_theme_constant_override("separation", 24)
-	root.add_child(top)
-
-	# ── Phe Hero (TRÁI — hero spawn bên trái) ──
-	var hside := VBoxContainer.new()
-	hside.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(hside)
-	var hname := Style.label("THE HERO", 10, Color("c8d4e0"))
-	hside.add_child(hname)
-	hero_bar = Style.health_bar(380, Color("3d6ea5"))
-	hero_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	hside.add_child(hero_bar)
-	# Stamina + estus của hero (đọc vị AI — thấy nó cạn sức/húp bình là biết nhịp đánh)
-	hero_stamina_bar = Style.health_bar(380, Color("3e8f6e"))
-	hero_stamina_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	hero_stamina_bar.custom_minimum_size = Vector2(380, 8)
-	hside.add_child(hero_stamina_bar)
-	var flask_row := HBoxContainer.new()
-	flask_row.add_theme_constant_override("separation", 4)
-	flask_row.visible = BrainScript.ESTUS_ENABLED   # estus tắt → ẩn hàng chấm
-	hside.add_child(flask_row)
-	for i in 3:
-		var pip := ColorRect.new()
-		pip.custom_minimum_size = Vector2(10, 14)
-		pip.color = Color("d9a441")
-		flask_row.add_child(pip)
-		flask_pips.append(pip)
-
-	# ── Counter hero gục (giữa) ──
-	var mid := VBoxContainer.new()
-	mid.alignment = BoxContainer.ALIGNMENT_CENTER
-	top.add_child(mid)
-	fallen_label = Style.label("FALLEN 0", 10, Color("c8d4e0"))
-	fallen_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mid.add_child(fallen_label)
-
-	# ── Phe Queen (PHẢI — Queen đứng bên phải) ──
-	var qside := VBoxContainer.new()
-	qside.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(qside)
-	var qname := Style.label("THE DARK QUEEN", 10, Color("d9a441"))
-	qname.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	qside.add_child(qname)
-	queen_bar = Style.health_bar(380, Color("8f1d2c"))
-	queen_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
-	qside.add_child(queen_bar)
-
-	# ── Cooldown 3 kỹ năng (góc dưới trái) ──
-	var cds := HBoxContainer.new()
-	cds.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	cds.offset_left = 24
-	cds.offset_bottom = -20
-	cds.offset_top = -92
-	cds.add_theme_constant_override("separation", 10)
-	root.add_child(cds)
-	cd_slash = _cd_slot(cds, "SLASH  J")
-	cd_bolt = _cd_slot(cds, "BOLT   K")
-	cd_nova = _cd_slot(cds, "NOVA   L")
-
-	# ── Banner giữa màn ──
-	banner = Style.label("", 22, Color("d9a441"), true)
-	banner.set_anchors_preset(Control.PRESET_CENTER)
-	banner.pivot_offset = Vector2(60, 12)
-	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	banner.modulate.a = 0.0
-	root.add_child(banner)
+	_style()
+	_flask_row.visible = BrainScript.ESTUS_ENABLED
 
 
-func _cd_slot(parent: Control, title: String) -> ColorRect:
-	var box := VBoxContainer.new()
-	parent.add_child(box)
-	var lbl := Style.label(title, 8, Color(0.62, 0.56, 0.5))
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(lbl)
-	var slot := ColorRect.new()
-	slot.custom_minimum_size = Vector2(56, 56)
-	slot.color = Color(0.14, 0.1, 0.16, 0.92)
-	box.add_child(slot)
-	# overlay tối phủ theo cooldown — con của slot, cao chiếm theo phần trăm
-	var veil := ColorRect.new()
-	veil.color = Color(0, 0, 0, 0.65)
-	veil.set_anchors_preset(Control.PRESET_FULL_RECT)
-	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	slot.add_child(veil)
-	return veil
+## Style đồng bộ qua UIStyle — không rải theme override trong tscn.
+func _style() -> void:
+	var named := {
+		$Root/TopBar/HeroSide/HeroName: [10, Style.COL_TEXT],
+		$Root/TopBar/QueenSide/QueenName: [10, Style.COL_GOLD],
+		fallen_label: [10, Color("c8d4e0")],
+		$Root/SkillBar/SlashSlot/SlashKey: [8, Style.COL_TEXT_DIM],
+		$Root/SkillBar/BoltSlot/BoltKey: [8, Style.COL_TEXT_DIM],
+		$Root/SkillBar/NovaSlot/NovaKey: [8, Style.COL_TEXT_DIM],
+	}
+	for label: Label in named:
+		var size: int = named[label][0]
+		var color: Color = named[label][1]
+		label.add_theme_font_override("font", Style.font())
+		label.add_theme_font_size_override("font_size", int(size * Style.FONT_SCALE))
+		label.add_theme_color_override("font_color", color)
+	banner.add_theme_font_override("font", Style.font())
+	banner.add_theme_font_size_override("font_size", int(22 * Style.FONT_SCALE))
+	banner.add_theme_color_override("font_color", Style.COL_GOLD)
+	_style_bar(hero_bar, Color("3d6ea5"))
+	_style_bar(queen_bar, Color("8f1d2c"))
+	_style_bar(hero_stamina_bar, Color("3e8f6e"))
+
+
+func _style_bar(bar: ProgressBar, fill: Color) -> void:
+	bar.add_theme_stylebox_override("background", Style.flat(Color(0.05, 0.04, 0.07, 0.9), Color(0, 0, 0, 0.5), 1, 2))
+	bar.add_theme_stylebox_override("fill", Style.flat(fill, Color(0, 0, 0, 0.4), 1, 2))
 
 
 func setup(queen_max: int, hero_max: int) -> void:
@@ -135,8 +77,8 @@ func update_hero_hp(cur: int, mx: int) -> void:
 ## Stamina (0..1) + số bình estus còn của hero.
 func update_hero_stamina(frac: float, flasks: int) -> void:
 	hero_stamina_bar.value = clampf(frac, 0.0, 1.0) * 100.0
-	for i in flask_pips.size():
-		flask_pips[i].color = Color("d9a441") if i < flasks else Color(0.25, 0.2, 0.24)
+	for i in _flask_pips.size():
+		_flask_pips[i].color = Color("d9a441") if i < flasks else Color(0.25, 0.2, 0.24)
 
 
 func set_fallen(count: int) -> void:

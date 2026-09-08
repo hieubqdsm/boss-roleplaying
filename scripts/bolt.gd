@@ -4,6 +4,7 @@ extends Node2D
 ## Projectile của Queen: bolt thẳng hoặc skull tự tìm mục tiêu (phase 2).
 
 const SparkFXScene := preload("res://scenes/fx/hit_spark.tscn")
+const Anchors := preload("res://scripts/combat/combat_anchors.gd")
 
 var direction := Vector2.RIGHT
 var speed := 540.0
@@ -56,7 +57,7 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 		return
 	if homing and is_instance_valid(target) and not target.is_dead():
-		var to_target := (target.global_position + Vector2(0, -44) - global_position).normalized()
+		var to_target: Vector2 = (target.hit_center() - global_position).normalized()
 		direction = direction.slerp(to_target, 2.4 * delta).normalized()
 	global_position += direction * speed * delta
 	if homing:
@@ -68,8 +69,8 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 		return
 	if is_instance_valid(target) and not target.is_dead():
-		if global_position.distance_to(target.global_position + Vector2(0, -44)) <= hit_radius:
-			target.take_hit(damage, global_position.x, 240.0, cause)
+		if global_position.distance_to(target.hit_center()) <= hit_radius:
+			target.take_hit(damage, global_position.x, Anchors.DEFAULT_KNOCK, cause)
 			var spark := SparkFXScene.instantiate()
 			get_parent().add_child(spark)
 			spark.global_position = global_position
