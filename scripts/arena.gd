@@ -69,6 +69,14 @@ func _process(delta: float) -> void:
 ## Web debug bridge — Playwright/tự động hoá đọc trạng thái qua window.__gameState.
 ## Chỉ chạy trên bản web; desktop/headless không tốn chi phí gì.
 func _push_web_state() -> void:
+	# Remote command channel: Playwright set window.__cmd = "f9" → game xử lý + xoá.
+	var cmd := str(JavaScriptBridge.eval("(window.__cmd === undefined || window.__cmd === null) ? '' : window.__cmd"))
+	if cmd != "":
+		JavaScriptBridge.eval("window.__cmd = ''")
+		if cmd == "f9":
+			GameSettings.debug_hitbox = not GameSettings.debug_hitbox
+			GameSettings.save_settings()
+			print("[BRIDGE] cmd 'f9' → debug_hitbox = ", GameSettings.debug_hitbox)
 	var s := {
 		"round": round_idx, "fallen": heroes_fallen, "time": snappedf(fight_time, 0.1),
 		"queen_hp": queen.health.health, "queen_max": queen.health.max_health,
@@ -78,8 +86,34 @@ func _push_web_state() -> void:
 		"flasks": hero.flasks_left(), "debug_hitbox": GameSettings.debug_hitbox,
 		"skill_uses": queen.skill_uses.duplicate(),
 		"memory": hero.memory_dict(),
+		"hero_dbg": hero.debug_info(),
+		"queen_dbg": queen.debug_info(),
 	}
+	if GameSettings.debug_hitbox:
+		# F9 bật → đẩy cả hình hitbox (đã chuyển thành số thuần) vào log
+		s["debug_shapes"] = {
+			"hero": _plain_shapes(hero._debug_shapes()),
+			"queen": _plain_shapes(queen._debug_shapes()),
+		}
+	print("[BRIDGE] push ", str(s).length(), " chars")  # chan doan — xoa khi on
 	JavaScriptBridge.eval("window.__gameState = %s" % JSON.stringify(s))
+
+
+## Vector2/Color → mảng số thuần để JSON.stringify serialize được.
+func _plain_shapes(shapes: Array) -> Array:
+	var out := []
+	for sh in shapes:
+		var p := {}
+		for k in sh:
+			var v = sh[k]
+			if v is Vector2:
+				p[k] = [snappedf(v.x, 0.1), snappedf(v.y, 0.1)]
+			elif v is Color:
+				p[k] = [snappedf(v.r, 0.01), snappedf(v.g, 0.01), snappedf(v.b, 0.01), snappedf(v.a, 0.01)]
+			else:
+				p[k] = v
+		out.append(p)
+	return out
 
 
 func _on_phase2() -> void:

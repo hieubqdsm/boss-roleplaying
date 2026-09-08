@@ -348,3 +348,17 @@ func stamina_frac() -> float:
 
 func flasks_left() -> int:
 	return brain_state.flasks
+
+
+## Debug info cho web bridge — log-driven test (thay screenshot).
+func debug_info() -> Dictionary:
+	return {
+		"phase": brain_state.phase,
+		"action": BrainScript.action_name(_last_action),
+		"x": int(position.x),
+		"hp": health.health,
+		"stamina": int(brain_state.stamina),
+		"flasks": brain_state.flasks,
+		"rolling": brain.is_rolling(brain_state),
+		"invuln": invuln > 0.0,
+	}

@@ -13,6 +13,13 @@ var _settings: SettingsScript
 func _ready() -> void:
 	GameAudio.play_music("menu")
 
+	# Auto-test entry point (web): ?autotest → thẳng arena, cho Playwright
+	# tự chơi không phụ thuộc click toạ độ menu.
+	if OS.has_feature("web") and bool(JavaScriptBridge.eval("location.search.includes('autotest')")):
+		AudioServer.set_bus_mute(0, true)  # tự động hoá — không bật tiếng máy người dùng
+		_on_new_game.call_deferred()
+		return
+
 	var box := VBoxContainer.new()
 	box.set_anchors_preset(Control.PRESET_CENTER_LEFT)
 	box.offset_left = 90

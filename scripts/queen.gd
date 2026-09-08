@@ -264,6 +264,19 @@ func apply_hero_hit(dmg: int, from_x: float) -> void:
 	GameAudio.play_sfx("hurt_queen")
 
 
+## Debug info cho web bridge — log-driven test.
+func debug_info() -> Dictionary:
+	return {
+		"x": int(position.x),
+		"hp": health.health,
+		"phase2": phase2,
+		"slash_pending": _slash_pending > 0.0,
+		"nova_pending": _nova_pending > 0.0,
+		"recovery": _skill_recovery > 0.0,
+		"invuln": _invuln > 0.0,
+	}
+
+
 func cooldown_fractions() -> Vector3:
 	return Vector3(
 		1.0 - _cd_slash / slash_cooldown,

@@ -114,6 +114,22 @@ static func dodge_chance(memory: Memory, kind: String) -> float:
 	return minf(DODGE_CAP, float(BASE_DODGE.get(kind, 0.2)) + DODGE_PER_DEATH * memory.deaths_by(kind))
 
 
+static func action_name(a: Action) -> String:
+	match a:
+		Action.WAIT: return "wait"
+		Action.SPACING: return "spacing"
+		Action.ENGAGE: return "engage"
+		Action.WINDUP: return "windup"
+		Action.STRIKE: return "strike"
+		Action.RECOVER: return "recover"
+		Action.ROLL: return "roll"
+		Action.RETREAT: return "retreat"
+		Action.SIP: return "sip"
+		Action.HEAL_APPLY: return "heal"
+		Action.STAGGER: return "stagger"
+	return "?"
+
+
 func step(dist_x: float, cfg: BrainConfig, state: BrainState, delta: float,
 		threats: Threats, memory: Memory) -> StepResult:
 	state.timer += delta
